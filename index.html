@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="theme-color" content="#060612">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="26 نظام كلاسيكي في مكان واحد — منصة سحابية على GitHub · تشغيل كامل داخل المتصفح">
+<title>🕹️ ARCADE VAULT</title>
+<link rel="manifest" id="pwaManifest">
+<script>
+// ═══ SERVICE WORKER v5 — Caches EJS Cores + App Shell ═══
+if('serviceWorker' in navigator){
+  const swCode=`
+const CACHE_APP='arcade-vault-v5-app';
+const CACHE_CORES='arcade-vault-v5-cores';
+const CORE_HOSTS=['cdn.emulatorjs.org','raw.githubusercontent.com'];
+self.addEventListener('install',e=>{
+  e.waitUntil(
+    caches.open(CACHE_APP).then(c=>c.addAll([location.href||'/'])).then(()=>self.skipWaiting())
+  );
+});
+self.addEventListener('activate',e=>{
+  e.waitUntil(
+    caches.keys().then(ks=>Promise.all(
+      ks.filter(k=>k!==CACHE_APP&&k!==CACHE_CORES).map(k=>caches.delete(k))
+    )).then(()=>self.clients.claim())
+  );
+});
+self.addEventListener('fetch',e=>{
+  if(e.request.method!=='GET')return;
+  const url=new URL(e.request.url);
+  const isCore=CORE_HOSTS.some(h=>url.hostname.includes(h));
+  if(isCore){
+    // Cache-first for emulator cores (they never change)
+    e.respondWith(
+      caches.open(CACHE_CORES).then(cache=>
+        cache.match(e.request).then(cached=>{
+          if(cached)return cached;
+          return fetch(e.request).then(res=>{
+            if(res&&res.status===200){cache.put(e.request,res.clone())}
+            return res;
+          });
+        })
+      )
+    );
+    return;
+  }
+  // Network-first for everything else, fall back to cache
+  e.respondWith(
+    fetch(e.request).then(res=>{
+      if(res&&res.status===200&&res.type==='basic'){
+        const c=res.clone();
+        caches.open(CACHE_APP).then(ca=>ca.put(e.request,c));
+      }
+      return res;
+    }).catch(()=>caches.match(e.request))
+  );
+});
+`;
+  const blob=new Blob([swCode],{type:'application/javascript'});
+  const swUrl=URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl,{scope:'/'}).catch(()=>{});
+}
+</script>
+<style>
+:root{
+  --bg:#060612;--surface:#0f0f28;--card:#141430;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);
+  --text:#dde0ff;--muted:#5a5a90;--hint:#333360;
+  --white:#fff;--danger:#ff3355;--success:#00ffaa;
+  --fd:'Orbitron','Courier New',ui-monospace,monospace;--fb:'Cairo','Segoe UI',system-ui,-apple-system,Arial,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow-x:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--fb)}
+
+/* BG */
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(100,60,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(100,60,255,.025) 1px,transparent 1px);
+  background-size:40px 40px;animation:bgd 40s linear infinite;}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 60% 40% at 20% 20%,rgba(120,40,255,.07),transparent 60%),
+             radial-gradient(ellipse 40% 50% at 80% 80%,rgba(0,80,255,.05),transparent 60%);}
+@keyframes bgd{to{background-position:40px 40px}}
+
+.wrap{position:relative;z-index:1}
+
+/* ═══ TOP BAR ═══ */
+.topbar{position:sticky;top:0;z-index:90;background:rgba(6,6,18,.93);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 14px}
+.topbar-inner{height:54px;display:flex;align-items:center;gap:10px;max-width:1200px;margin:0 auto}
+.logo{display:flex;align-items:center;gap:8px;cursor:pointer;flex-shrink:0}
+.logo-ico{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#8800ff,#ff0088);display:grid;place-items:center;font-size:16px;box-shadow:0 0 16px #8800ff55;animation:lp 3s ease infinite}
+@keyframes lp{0%,100%{box-shadow:0 0 16px #8800ff55}50%{box-shadow:0 0 30px #ff008877}}
+.logo-txt{font-family:var(--fd);font-size:12px;font-weight:900;letter-spacing:2px;background:linear-gradient(90deg,#aa44ff,#ff44aa,#44ffcc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.search-wrap{flex:1;position:relative;max-width:360px}
+.search-wrap input{width:100%;padding:8px 14px 8px 34px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:24px;color:var(--text);font-family:var(--fb);font-size:14px;outline:none;transition:all .3s}
+.search-wrap input:focus{border-color:rgba(136,0,255,.5);background:rgba(136,0,255,.07)}
+.search-wrap input::placeholder{color:var(--muted)}
+.search-wrap::before{content:'🔍';position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none}
+.hstats{margin-right:auto;display:flex;gap:16px;flex-shrink:0}
+.hs{text-align:center}.hs-n{font-family:var(--fd);font-size:14px;font-weight:900;background:linear-gradient(90deg,#aa44ff,#ff44aa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hs-l{font-size:8px;color:var(--muted);letter-spacing:1.5px}
+@media(max-width:460px){.hstats{display:none}.logo-txt{display:none}}
+
+/* ═══ NAV ═══ */
+.nav{position:sticky;top:54px;z-index:89;background:rgba(10,10,30,.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.ntab{padding:12px 18px;font-family:var(--fd);font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:all .25s;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.ntab.on{color:var(--white);border-bottom-color:#8800ff}
+.ntab:hover:not(.on){color:var(--text)}
+.nbadge{background:#8800ff;color:#fff;border-radius:10px;padding:1px 7px;font-size:9px;min-width:18px;text-align:center}
+
+/* ═══ SCREENS ═══ */
+.scr{display:none;padding:20px 14px 90px;max-width:1200px;margin:0 auto;animation:si .3s ease}
+.scr.on{display:block}
+@keyframes si{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ═══ HOME HERO ═══ */
+.hero{text-align:center;padding:32px 16px 36px;position:relative}
+.hero-pill{display:inline-block;padding:4px 14px;border:1px solid rgba(136,0,255,.35);border-radius:20px;font-family:var(--fd);font-size:9px;letter-spacing:3px;color:#aa66ff;background:rgba(136,0,255,.07);margin-bottom:14px}
+.hero h1{font-family:var(--fd);font-size:clamp(28px,7vw,60px);font-weight:900;line-height:1.05;background:linear-gradient(135deg,#ff0088,#8800ff,#00ffcc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:12px}
+.hero p{font-size:15px;color:var(--muted);max-width:440px;margin:0 auto 24px;line-height:1.6}
+.hero-nums{display:flex;gap:28px;justify-content:center;flex-wrap:wrap}
+.hn{display:flex;flex-direction:column;align-items:center;gap:2px}
+.hn-n{font-family:var(--fd);font-size:28px;font-weight:900;color:var(--white)}
+.hn-l{font-size:9px;color:var(--muted);letter-spacing:2px}
+
+/* ═══ DROP ZONE ═══ */
+.dropzone{border:2px dashed rgba(136,0,255,.3);border-radius:20px;padding:26px 18px;text-align:center;cursor:pointer;transition:all .3s;background:rgba(136,0,255,.04);margin-bottom:20px;position:relative;overflow:hidden}
+.dropzone:hover,.dropzone.drag{border-color:rgba(136,0,255,.6);background:rgba(136,0,255,.08);box-shadow:0 0 30px rgba(136,0,255,.12);transform:translateY(-2px)}
+.dz-ico{font-size:38px;display:block;margin-bottom:8px;animation:fl 3s ease infinite}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.dz-title{font-size:16px;font-weight:700;color:var(--white);margin-bottom:4px}
+.dz-sub{font-size:13px;color:var(--muted);margin-bottom:8px}
+.dz-badge{font-family:var(--fd);font-size:9px;letter-spacing:1.5px;color:#8800ff;background:rgba(136,0,255,.1);border:1px solid rgba(136,0,255,.3);padding:4px 12px;border-radius:8px;display:inline-block}
+
+/* ═══ FILTERS ═══ */
+.filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.filters.scroll{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+.filters.scroll::-webkit-scrollbar{display:none}
+.fc{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:var(--fb);font-size:13px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.fc.on,.fc:hover{background:rgba(136,0,255,.15);border-color:rgba(136,0,255,.45);color:var(--white)}
+
+/* ═══ SYSTEMS GRID ═══ */
+.sysgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px}
+@media(max-width:360px){.sysgrid{grid-template-columns:repeat(2,1fr)}}
+
+.syscard{--sc:#8800ff;position:relative;border-radius:16px;padding:16px 13px 13px;cursor:pointer;transition:all .3s cubic-bezier(.34,1.4,.64,1);border:1px solid rgba(255,255,255,.06);background:var(--card);overflow:hidden;display:flex;flex-direction:column;gap:7px;animation:ci .4s ease both}
+@keyframes ci{from{opacity:0;transform:translateY(16px) scale(.95)}to{opacity:1;transform:none}}
+.syscard::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--sc),transparent 65%);opacity:.05;transition:opacity .3s}
+.syscard::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--sc),transparent)}
+.syscard:hover{transform:translateY(-5px) scale(1.02);border-color:var(--sc);box-shadow:0 18px 50px rgba(0,0,0,.5),0 0 28px color-mix(in srgb,var(--sc) 28%,transparent)}
+.syscard:hover::before{opacity:.1}
+.syscard:active{transform:scale(.97)!important}
+.sc-ico{width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font-size:23px;transition:all .3s;position:relative;z-index:1}
+.syscard:hover .sc-ico{background:color-mix(in srgb,var(--sc) 18%,transparent);border-color:var(--sc);transform:scale(1.1) rotate(-4deg)}
+.sc-name{font-family:var(--fd);font-size:11px;font-weight:700;color:var(--white);letter-spacing:.5px;z-index:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc-full{font-size:10px;color:var(--muted);line-height:1.3;z-index:1}
+.sc-bot{display:flex;justify-content:space-between;align-items:center;z-index:1;margin-top:auto}
+.sc-yr{font-size:10px;color:var(--hint);font-family:var(--fd)}
+.sc-cnt{font-family:var(--fd);font-size:9px;padding:3px 7px;border-radius:8px;background:rgba(255,255,255,.05);color:var(--muted);transition:all .2s}
+.sc-cnt.has{background:color-mix(in srgb,var(--sc) 22%,transparent);color:var(--sc);border:1px solid color-mix(in srgb,var(--sc) 40%,transparent)}
+
+/* ═══ LIBRARY — COVERS ═══ */
+.lib-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.lib-top h2{font-family:var(--fd);font-size:15px;color:var(--white);flex:1}
+.btn-add{height:36px;padding:0 16px;border-radius:10px;background:linear-gradient(135deg,#8800ff,#ff0088);border:none;color:#fff;font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(136,0,255,.3)}
+.btn-add:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(136,0,255,.5)}
+
+.covers{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+@media(max-width:360px){.covers{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:700px){.covers{grid-template-columns:repeat(auto-fill,minmax(155px,1fr))}}
+
+.gcard{--gc:#8800ff;position:relative;border-radius:13px;overflow:hidden;cursor:pointer;border:1px solid rgba(255,255,255,.06);transition:all .3s cubic-bezier(.34,1.4,.64,1);background:var(--card);animation:ci .4s ease both}
+.gcard:hover{transform:translateY(-6px) scale(1.03);border-color:var(--gc);box-shadow:0 20px 50px rgba(0,0,0,.5),0 0 24px color-mix(in srgb,var(--gc) 28%,transparent)}
+
+.gcard-img{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden}
+.gcard-img canvas{width:100%;height:100%;display:block;transition:transform .4s}
+.gcard:hover .gcard-img canvas{transform:scale(1.06)}
+
+/* Hover overlay */
+.gcard-ov{position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.9),rgba(0,0,0,.5) 50%,transparent);display:flex;flex-direction:column;justify-content:flex-end;padding:10px;opacity:0;transition:opacity .25s}
+.gcard:hover .gcard-ov{opacity:1}
+.ov-btns{display:flex;gap:7px}
+.ov-play{flex:1;height:38px;border-radius:8px;background:var(--gc);border:none;color:#fff;font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;transition:transform .2s;box-shadow:0 4px 14px color-mix(in srgb,var(--gc) 50%,transparent);display:flex;align-items:center;justify-content:center;gap:5px}
+.ov-play:hover{transform:scale(1.05)}
+.ov-del{width:38px;height:38px;border-radius:8px;background:rgba(255,51,85,.15);border:1px solid rgba(255,51,85,.35);color:var(--danger);cursor:pointer;font-size:15px;display:grid;place-items:center;transition:all .2s}
+.ov-del:hover{background:rgba(255,51,85,.3)}
+
+/* Save badge */
+.save-badge{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.75);border:1px solid rgba(0,255,170,.4);color:var(--success);font-family:var(--fd);font-size:8px;letter-spacing:1px;padding:3px 7px;border-radius:5px;display:flex;align-items:center;gap:4px}
+.save-dot{width:5px;height:5px;border-radius:50%;background:var(--success);animation:sd 1.5s ease infinite}
+@keyframes sd{0%,100%{opacity:1}50%{opacity:.3}}
+.recent-badge{position:absolute;top:6px;right:6px;background:rgba(255,140,0,.25);border:1px solid rgba(255,140,0,.4);color:#ffaa44;font-family:var(--fd);font-size:8px;letter-spacing:.5px;padding:3px 7px;border-radius:5px}
+
+.gcard-info{padding:8px 10px 10px}
+.gc-name{font-size:12px;font-weight:700;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+.gc-meta{display:flex;justify-content:space-between;align-items:center}
+.gc-sys{font-family:var(--fd);font-size:9px;padding:2px 7px;border-radius:5px;background:color-mix(in srgb,var(--gc) 15%,transparent);color:var(--gc);border:1px solid color-mix(in srgb,var(--gc) 35%,transparent)}
+.gc-sz{font-size:10px;color:var(--muted)}
+
+/* Empty state */
+.empty{text-align:center;padding:60px 20px}
+.empty-ico{font-size:60px;display:block;opacity:.22;margin-bottom:12px}
+.empty-t{font-family:var(--fd);font-size:15px;color:var(--white);margin-bottom:8px}
+.empty-s{font-size:13px;color:var(--muted);line-height:1.6;max-width:280px;margin:0 auto}
+
+/* ═══ SETTINGS ═══ */
+.stg-lbl{font-family:var(--fd);font-size:9px;letter-spacing:2.5px;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.stg-lbl::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border2),transparent)}
+.stg-grp{background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:hidden;margin-bottom:20px}
+.stg-item{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .2s}
+.stg-item:last-child{border-bottom:none}
+.stg-item:hover{background:rgba(255,255,255,.03)}
+.si-ico{width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.05);border:1px solid var(--border);display:grid;place-items:center;font-size:19px;flex-shrink:0}
+.si-inf{flex:1}.si-t{font-size:14px;font-weight:600;color:var(--white)}.si-d{font-size:11px;color:var(--muted);margin-top:2px}
+.si-arr{color:var(--muted);font-size:17px}
+.toggle{width:42px;height:23px;background:rgba(255,255,255,.15);border-radius:12px;position:relative;cursor:pointer;transition:background .3s;flex-shrink:0;border:none}
+.toggle.on{background:linear-gradient(90deg,#8800ff,#ff0088)}
+.toggle::after{content:'';position:absolute;top:2px;right:2px;width:19px;height:19px;border-radius:50%;background:#fff;transition:transform .3s}
+.toggle.on::after{transform:translateX(-19px)}
+
+/* ═══ EMULATOR OVERLAY ═══ */
+#emuOverlay{position:fixed;inset:0;z-index:200;background:#000;display:none;flex-direction:column}
+#emuOverlay.on{display:flex}
+.emu-bar{height:46px;flex-shrink:0;background:rgba(6,6,18,.97);border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;padding:0 10px;gap:8px}
+.emu-back{width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);color:#fff;font-size:20px;cursor:pointer;display:grid;place-items:center;transition:all .2s;flex-shrink:0}
+.emu-back:hover{background:rgba(255,255,255,.15)}
+.emu-inf{flex:1;min-width:0;text-align:center}
+.emu-name{font-family:var(--fd);font-size:11px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.emu-sys{font-size:9px;color:var(--muted);letter-spacing:1.5px;font-family:var(--fd)}
+.emu-as{display:flex;align-items:center;gap:4px;font-family:var(--fd);font-size:9px;letter-spacing:1px;color:var(--muted);flex-shrink:0;padding:0 6px;transition:color .3s}
+.emu-as.on{color:var(--success)}
+.emu-as-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.emu-as.on .emu-as-dot{animation:sd 1.5s ease infinite}
+.emu-btns{display:flex;gap:5px}
+.emu-btn{height:30px;padding:0 10px;border-radius:7px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);color:#fff;font-family:var(--fb);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+.emu-btn:hover{background:rgba(136,0,255,.3);border-color:#8800ff}
+.emu-btn.saved{background:rgba(0,255,170,.15);border-color:rgba(0,255,170,.4);color:var(--success)}
+#emuContent{flex:1;position:relative;overflow:hidden;background:#000}
+#emuFrame{width:100%;height:100%;border:none}
+
+/* Loading screen */
+#emuLoad{position:absolute;inset:0;z-index:10;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .5s}
+#emuLoad.gone{opacity:0;pointer-events:none}
+.el-cover{width:110px;height:148px;border-radius:11px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8),0 0 40px rgba(136,0,255,.4);animation:elfl 2s ease-in-out infinite;flex-shrink:0}
+@keyframes elfl{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-10px) scale(1.04)}}
+.el-cover canvas{width:100%;height:100%;display:block}
+.el-title{font-family:var(--fd);font-size:15px;font-weight:900;color:#fff;text-align:center;max-width:260px}
+.el-sys{font-size:10px;color:var(--muted);letter-spacing:2px;font-family:var(--fd);text-align:center}
+.el-bar{width:200px;height:2px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
+.el-bar-fill{height:100%;background:linear-gradient(90deg,#8800ff,#ff0088,#00ffcc);animation:elp 2s ease-in-out infinite}
+@keyframes elp{0%{width:0%;margin-left:0}50%{width:75%;margin-left:10%}100%{width:0%;margin-left:100%}}
+.el-tip{font-size:11px;color:var(--hint);text-align:center;max-width:240px;line-height:1.5;animation:blink .9s alternate infinite}
+@keyframes blink{from{opacity:.3}to{opacity:.8}}
+
+/* ═══ MODAL ═══ */
+.modal-bg{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.82);backdrop-filter:blur(10px);display:none;align-items:flex-end;justify-content:center}
+.modal-bg.on{display:flex}
+@media(min-width:700px){.modal-bg{align-items:center}}
+.modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:22px 22px 0 0;width:100%;max-height:88dvh;overflow-y:auto;animation:mup .3s cubic-bezier(.34,1.2,.64,1);scrollbar-width:none}
+.modal-box::-webkit-scrollbar{display:none}
+@media(min-width:700px){.modal-box{max-width:520px;border-radius:22px;margin:0 14px;max-height:80dvh}}
+@keyframes mup{from{transform:translateY(100%)}to{transform:none}}
+.modal-grip{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:13px auto 0}
+.modal-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.mh-ico{width:46px;height:46px;border-radius:12px;flex-shrink:0;display:grid;place-items:center;font-size:22px;transition:none}
+.mh-info{flex:1}.mh-name{font-family:var(--fd);font-size:14px;font-weight:900;color:var(--white)}.mh-full{font-size:12px;color:var(--muted);margin-top:2px}
+.mh-close{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);cursor:pointer;display:grid;place-items:center;font-size:17px;transition:all .2s}
+.mh-close:hover{background:rgba(255,51,85,.2);color:#fff;border-color:var(--danger)}
+.modal-body{padding:14px 16px 20px}
+
+/* Modal drop zone */
+.mdrop{border:2px dashed rgba(136,0,255,.25);border-radius:15px;padding:26px 16px;text-align:center;cursor:pointer;transition:all .3s;margin-bottom:14px}
+.mdrop:hover,.mdrop.drag{border-color:rgba(136,0,255,.55);background:rgba(136,0,255,.05)}
+.mdrop-ico{font-size:36px;display:block;margin-bottom:8px;animation:fl 3s ease infinite}
+.mdrop-title{font-size:15px;font-weight:700;color:var(--white);margin-bottom:4px}
+.mdrop-sub{font-size:12px;color:var(--muted);margin-bottom:8px}
+.ext-row{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.extb{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:10px;font-family:var(--fd);color:var(--muted)}
+.mg-sec{font-size:10px;font-family:var(--fd);letter-spacing:2px;color:var(--muted);margin-bottom:8px}
+.mg-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:7px;cursor:pointer;transition:all .2s}
+.mg-item:hover{border-color:var(--sc,#8800ff)}
+.mg-cov{width:36px;height:48px;border-radius:6px;overflow:hidden;flex-shrink:0}
+.mg-cov canvas{width:100%;height:100%;display:block}
+.mg-inf{flex:1;min-width:0}.mg-name{font-size:13px;font-weight:700;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mg-meta{font-size:11px;color:var(--muted);margin-top:2px;display:flex;gap:7px;flex-wrap:wrap}
+.mg-sv{color:var(--success);font-size:9px;font-family:var(--fd)}
+.mg-acts{display:flex;gap:5px}
+.mg-play{width:34px;height:34px;border-radius:50%;border:none;color:#fff;font-size:13px;cursor:pointer;display:grid;place-items:center;transition:transform .2s}
+.mg-play:hover{transform:scale(1.1)}
+.mg-del{width:34px;height:34px;border-radius:50%;background:rgba(255,51,85,.1);border:1px solid rgba(255,51,85,.25);color:var(--danger);cursor:pointer;font-size:13px;display:grid;place-items:center;transition:all .2s}
+.mg-del:hover{background:rgba(255,51,85,.25)}
+
+/* ═══ IMPORT PROGRESS ═══ */
+#importProg{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.92);backdrop-filter:blur(8px);display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px}
+#importProg.on{display:flex}
+.ip-t{font-family:var(--fd);font-size:14px;color:#fff;text-align:center}
+.ip-f{font-size:12px;color:var(--muted);max-width:260px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ip-bar{width:240px;height:4px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+.ip-fill{height:100%;background:linear-gradient(90deg,#8800ff,#ff0088,#00ffcc);transition:width .15s;border-radius:4px}
+.ip-c{font-family:var(--fd);font-size:12px;color:var(--muted)}
+
+/* ═══ TOAST ═══ */
+#toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(14px);background:rgba(14,14,40,.97);border:1px solid rgba(136,0,255,.35);color:#fff;padding:11px 22px;border-radius:50px;font-size:14px;font-weight:600;z-index:999;opacity:0;transition:all .3s;white-space:nowrap;backdrop-filter:blur(16px);pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,.5);max-width:88vw;text-align:center}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ═══ GITHUB CLOUD BADGES ═══ */
+.gh-badge{position:absolute;bottom:6px;left:6px;background:rgba(30,70,140,.85);border:1px solid rgba(80,150,255,.5);color:#66aaff;font-family:var(--fd);font-size:8px;letter-spacing:.5px;padding:2px 7px;border-radius:4px;display:flex;align-items:center;gap:3px}
+.url-badge{position:absolute;bottom:6px;left:6px;background:rgba(0,180,80,.75);border:1px solid rgba(0,255,150,.4);color:#00ffaa;font-family:var(--fd);font-size:8px;letter-spacing:.5px;padding:2px 6px;border-radius:4px}
+.cloud-tag{display:inline-flex;align-items:center;gap:3px;background:rgba(30,80,200,.2);border:1px solid rgba(80,140,255,.4);border-radius:6px;padding:2px 8px;font-family:var(--fd);font-size:9px;color:#88bbff}
+
+/* ═══ GITHUB SYNC BUTTON ═══ */
+.btn-gh{height:36px;padding:0 14px;border-radius:10px;background:linear-gradient(135deg,#1a3a6a,#24538c);border:1px solid rgba(80,140,255,.4);color:#88ccff;font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
+.btn-gh:hover{background:linear-gradient(135deg,#1e4a8a,#2a60a8);border-color:rgba(80,160,255,.6);transform:translateY(-1px)}
+.btn-gh.loading{opacity:.7;pointer-events:none}
+.btn-url{height:36px;padding:0 14px;border-radius:10px;background:rgba(0,200,100,.1);border:1px solid rgba(0,255,150,.3);color:#00dd88;font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-url:hover{background:rgba(0,200,100,.2);transform:translateY(-1px)}
+
+/* ═══ GITHUB SETTINGS SECTION ═══ */
+.gh-section{background:linear-gradient(135deg,rgba(20,30,80,.6),rgba(10,20,50,.8));border:1px solid rgba(80,120,255,.25);border-radius:15px;overflow:hidden;margin-bottom:20px}
+.gh-section-head{padding:14px 16px;border-bottom:1px solid rgba(80,120,255,.15);display:flex;align-items:center;gap:10px}
+.gh-section-body{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.gh-row{display:flex;gap:8px;align-items:center}
+.gh-label{font-size:11px;color:var(--muted);font-family:var(--fd);letter-spacing:1px;min-width:80px;flex-shrink:0}
+.gh-inp{flex:1;padding:8px 11px;background:rgba(255,255,255,.05);border:1px solid rgba(80,120,255,.25);border-radius:8px;color:var(--text);font-size:12px;outline:none;font-family:var(--fb)}
+.gh-inp:focus{border-color:rgba(80,160,255,.6);background:rgba(80,120,255,.07)}
+.gh-inp::placeholder{color:var(--hint)}
+.gh-btn{padding:8px 14px;border-radius:8px;background:linear-gradient(135deg,#1e4080,#2a55a0);border:1px solid rgba(80,140,255,.4);color:#aaccff;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap}
+.gh-btn:hover{background:linear-gradient(135deg,#2a55a8,#3266b8)}
+.gh-status{font-size:11px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--muted);font-family:var(--fd);letter-spacing:1px;text-align:center}
+.gh-status.ok{color:var(--success);border-color:rgba(0,255,170,.3);background:rgba(0,255,170,.05)}
+.gh-status.err{color:var(--danger);border-color:rgba(255,51,85,.3);background:rgba(255,51,85,.05)}
+.gh-status.loading{color:#88aaff}
+
+/* ═══ ADD BY URL MODAL ═══ */
+.url-modal-bg{position:fixed;inset:0;z-index:160;background:rgba(0,0,0,.85);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:16px}
+.url-modal-bg.on{display:flex}
+.url-modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:18px;width:100%;max-width:480px;padding:22px;animation:si .25s ease}
+.url-modal-box h3{font-family:var(--fd);font-size:14px;color:#fff;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.url-field{display:flex;flex-direction:column;gap:5px;margin-bottom:13px}
+.url-field label{font-size:11px;color:var(--muted);font-family:var(--fd);letter-spacing:1px}
+.url-field input,.url-field select{padding:9px 12px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:9px;color:var(--text);font-size:13px;outline:none;font-family:var(--fb)}
+.url-field input:focus,.url-field select:focus{border-color:rgba(136,0,255,.5)}
+.url-field select option{background:#1a1a3a}
+.url-modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.url-modal-cancel{padding:9px 18px;border-radius:9px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:13px}
+.url-modal-add{padding:9px 18px;border-radius:9px;background:linear-gradient(135deg,#8800ff,#ff0088);border:none;color:#fff;font-size:13px;font-weight:700;cursor:pointer}
+
+/* ═══ GITHUB IMPORT PROGRESS ═══ */
+#ghProg{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(14,14,40,.97);border:1px solid rgba(80,140,255,.4);color:#88ccff;padding:11px 22px;border-radius:12px;font-family:var(--fd);font-size:11px;z-index:500;opacity:0;transition:all .3s;white-space:nowrap;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,.5);letter-spacing:1px;display:flex;align-items:center;gap:10px}
+#ghProg.on{opacity:1}
+.gh-spin{width:14px;height:14px;border:2px solid rgba(80,140,255,.3);border-top-color:#88ccff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+
+/* ═══ FAVORITES ═══ */
+.fav-btn{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.15);color:#ccc;cursor:pointer;display:grid;place-items:center;font-size:14px;transition:all .2s;z-index:5;opacity:0}
+.gcard:hover .fav-btn{opacity:1}
+.fav-btn.active{opacity:1;color:#ff4466;border-color:rgba(255,68,102,.5);background:rgba(255,68,102,.15)}
+
+/* ═══ GAMEPAD INDICATOR ═══ */
+.gp-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);background:rgba(0,255,100,.1);border:1px solid rgba(0,255,100,.3);color:#00ff66;font-family:var(--fd);font-size:9px;letter-spacing:1.5px;padding:4px 14px;border-radius:8px 8px 0 0;z-index:88;transition:opacity .4s;pointer-events:none;opacity:0}
+.gp-bar.on{opacity:1}
+
+/* ═══ EMU PATH SETTING ═══ */
+.emu-path-wrap{margin-top:6px;display:flex;gap:6px;align-items:center}
+.emu-path-inp{flex:1;padding:7px 12px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;outline:none;font-family:var(--fb)}
+.emu-path-inp:focus{border-color:rgba(136,0,255,.5)}
+.emu-path-btn{padding:7px 12px;border-radius:8px;background:linear-gradient(135deg,#8800ff,#ff0088);border:none;color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+
+/* ═══ ROM PATH MODAL SECTION ═══ */
+.path-section{border:1px solid rgba(0,255,170,.2);border-radius:12px;padding:13px 14px;margin-bottom:12px;background:rgba(0,255,170,.03)}
+.path-section-title{font-family:var(--fd);font-size:9px;letter-spacing:2px;color:var(--success);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.path-row{display:flex;gap:6px;align-items:center;margin-bottom:7px}
+.path-inp{flex:1;padding:8px 11px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;outline:none;font-family:var(--fb)}
+.path-inp:focus{border-color:rgba(136,0,255,.5)}
+.path-inp::placeholder{color:var(--hint)}
+.path-btn{padding:8px 11px;border-radius:8px;background:rgba(136,0,255,.2);border:1px solid rgba(136,0,255,.4);color:#cc88ff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s}
+.path-btn:hover{background:rgba(136,0,255,.35)}
+.path-btn.ok{background:rgba(0,255,170,.15);border-color:rgba(0,255,170,.4);color:var(--success)}
+.path-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(0,255,170,.1);border:1px solid rgba(0,255,170,.3);border-radius:6px;padding:2px 8px;font-family:var(--fd);font-size:9px;color:var(--success)}
+.from-path-badge{position:absolute;bottom:6px;left:6px;background:rgba(0,200,100,.75);border:1px solid rgba(0,255,150,.4);color:#00ffaa;font-family:var(--fd);font-size:8px;letter-spacing:.5px;padding:2px 6px;border-radius:4px}
+
+/* ═══ GITHUB CLOUD STYLES ═══ */
+.gh-badge{position:absolute;bottom:6px;left:6px;background:rgba(30,100,255,.75);border:1px solid rgba(60,140,255,.5);color:#88bbff;font-family:var(--fd);font-size:8px;letter-spacing:.5px;padding:2px 7px;border-radius:4px;display:flex;align-items:center;gap:3px}
+
+.btn-sync{height:36px;padding:0 14px;border-radius:10px;background:linear-gradient(135deg,#1e64ff,#0099ff);border:none;color:#fff;font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(30,100,255,.3);display:flex;align-items:center;gap:6px}
+.btn-sync:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(30,100,255,.5)}
+.btn-sync.loading{opacity:.7;pointer-events:none}
+.btn-sync.loading .sync-ico{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.gh-stg-grp{border:1px solid rgba(30,100,255,.25);border-radius:15px;overflow:hidden;margin-bottom:20px;background:rgba(30,100,255,.04)}
+.gh-stg-grp .stg-item{border-bottom-color:rgba(30,100,255,.1)}
+
+.gh-inp-row{display:flex;gap:7px;align-items:center;margin-bottom:8px}
+.gh-inp{flex:1;padding:8px 12px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;outline:none;font-family:var(--fb);min-width:0}
+.gh-inp:focus{border-color:rgba(30,100,255,.5)}
+.gh-inp::placeholder{color:var(--hint)}
+.gh-label{font-size:11px;color:var(--muted);flex-shrink:0;width:56px;text-align:left}
+
+.gh-status{display:flex;align-items:center;gap:8px;font-family:var(--fd);font-size:9px;padding:8px 12px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+.gh-dot{width:7px;height:7px;border-radius:50%;background:var(--hint);flex-shrink:0}
+.gh-dot.ok{background:var(--success);animation:sd 2s ease infinite}
+.gh-dot.err{background:var(--danger)}
+.gh-dot.loading{background:#ffcc00;animation:sd .7s ease infinite}
+
+.url-add-form{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:13px 14px;margin-bottom:12px}
+.url-add-title{font-family:var(--fd);font-size:9px;letter-spacing:2px;color:#88aaff;margin-bottom:10px}
+
+/* Cloud loading indicator in emulator screen */
+.el-cloud{display:flex;align-items:center;gap:7px;font-family:var(--fd);font-size:9px;color:#88aaff;letter-spacing:1px;padding:5px 14px;border-radius:20px;background:rgba(30,100,255,.1);border:1px solid rgba(30,100,255,.25)}
+.el-cloud-dot{width:6px;height:6px;border-radius:50%;background:#4488ff;animation:sd .6s ease infinite}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="logo" onclick="goHome()">
+      <div class="logo-ico">🕹️</div>
+      <div class="logo-txt">ARCADE VAULT</div>
+    </div>
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="ابحث عن لعبة أو نظام..." oninput="doSearch(this.value)">
+    </div>
+    <div class="hstats">
+      <div class="hs"><div class="hs-n">26</div><div class="hs-l">SYSTEM</div></div>
+      <div class="hs"><div class="hs-n" id="statGames">0</div><div class="hs-l">GAMES</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="ntab on" id="tab-home" onclick="showScr('home')">🏠 الرئيسية</button>
+  <button class="ntab" id="tab-lib" onclick="showScr('lib')">📚 مكتبتي <span class="nbadge" id="libBadge">0</span></button>
+  <button class="ntab" id="tab-fav" onclick="showScr('fav')">❤️ المفضلة <span class="nbadge" id="favBadge">0</span></button>
+  <button class="ntab" id="tab-settings" onclick="showScr('settings')">⚙️ الإعدادات</button>
+</nav>
+<div class="gp-bar" id="gpBar">🎮 GAMEPAD CONNECTED</div>
+
+<!-- HOME -->
+<div class="scr on" id="scr-home">
+  <div class="hero">
+    <div class="hero-pill">RETRO GAMING VAULT</div>
+    <h1>ARCADE<br>VAULT</h1>
+    <p>26 نظام كلاسيكي في مكان واحد — حمّل ملفاتك والعب فوراً</p>
+    <div class="hero-nums">
+      <div class="hn"><div class="hn-n">26</div><div class="hn-l">SYSTEM</div></div>
+      <div class="hn"><div class="hn-n">100%</div><div class="hn-l">BROWSER</div></div>
+      <div class="hn"><div class="hn-n">∞</div><div class="hn-l">GAMES</div></div>
+    </div>
+  </div>
+  <div class="dropzone" id="heroZone" onclick="inp('multi').click()">
+    <span class="dz-ico">📦</span>
+    <div class="dz-title">استورد ألعابك</div>
+    <div class="dz-sub">اضغط أو اسحب ملفاتك — يدعم التحميل المتعدد</div>
+    <div class="dz-badge">يقبل جميع صيغ الروم</div>
+  </div>
+  <div class="filters" id="sysFilters">
+    <button class="fc on" onclick="filterSys('all',this)">الكل</button>
+    <button class="fc" onclick="filterSys('nintendo',this)">Nintendo</button>
+    <button class="fc" onclick="filterSys('sega',this)">Sega</button>
+    <button class="fc" onclick="filterSys('sony',this)">Sony</button>
+    <button class="fc" onclick="filterSys('arcade',this)">Arcade</button>
+    <button class="fc" onclick="filterSys('atari',this)">Atari</button>
+    <button class="fc" onclick="filterSys('other',this)">أخرى</button>
+  </div>
+  <div class="sysgrid" id="sysGrid"></div>
+</div>
+
+<!-- LIBRARY -->
+<div class="scr" id="scr-lib">
+  <div class="lib-top">
+    <h2>📚 مكتبتي</h2>
+    <button class="btn-url" onclick="openUrlModal()">🔗 رابط</button>
+    <button class="btn-gh" id="btnGhSync" onclick="fetchGamesFromGitHub()">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </button>
+    <button class="btn-add" onclick="inp('multi').click()">+ إضافة</button>
+  </div>
+  <div class="filters scroll" id="libFilters">
+    <button class="fc on" onclick="filterLib('all',this)">الكل</button>
+  </div>
+  <div id="libContent"></div>
+</div>
+
+<!-- FAVORITES -->
+<div class="scr" id="scr-fav">
+  <div class="lib-top">
+    <h2>❤️ المفضلة</h2>
+    <button class="btn-add" onclick="inp('multi').click()">+ إضافة ألعاب</button>
+  </div>
+  <div id="favContent"></div>
+</div>
+
+<!-- SETTINGS -->
+<div class="scr" id="scr-settings">
+  <div style="height:8px"></div>
+
+  <!-- ════ GITHUB CLOUD ════ -->
+  <div class="stg-lbl">☁️ GitHub Cloud — مستودع الألعاب السحابي</div>
+  <div class="gh-section">
+    <div class="gh-section-head">
+      <div class="si-ico" style="background:rgba(80,120,255,.15);border-color:rgba(80,140,255,.4)">
+        <svg width="22" height="22" viewBox="0 0 16 16" fill="#88aaff"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      </div>
+      <div class="si-inf">
+        <div class="si-t">إعدادات GitHub Repository</div>
+        <div class="si-d">حدد مستودعك لجلب الألعاب تلقائياً عند كل زيارة</div>
+      </div>
+    </div>
+    <div class="gh-section-body">
+      <div class="gh-row">
+        <span class="gh-label">المالك</span>
+        <input class="gh-inp" id="ghOwner" placeholder="username أو organization">
+      </div>
+      <div class="gh-row">
+        <span class="gh-label">المستودع</span>
+        <input class="gh-inp" id="ghRepo" placeholder="my-roms-repo">
+      </div>
+      <div class="gh-row">
+        <span class="gh-label">الفرع</span>
+        <input class="gh-inp" id="ghBranch" placeholder="main" value="main">
+      </div>
+      <div class="gh-row">
+        <span class="gh-label">مجلد الروم</span>
+        <input class="gh-inp" id="ghFolder" placeholder="roms  (اتركه فارغاً للجذر)">
+      </div>
+      <div class="gh-row">
+        <span class="gh-label">Token</span>
+        <input class="gh-inp" id="ghToken" placeholder="ghp_... (اختياري — للمستودعات الخاصة)" type="password">
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="gh-btn" onclick="saveGhConfig()">💾 حفظ الإعدادات</button>
+        <button class="gh-btn" onclick="fetchGamesFromGitHub(true)">🔄 جلب الألعاب الآن</button>
+        <button class="gh-btn" style="background:rgba(255,100,100,.15);border-color:rgba(255,80,80,.35);color:#ff9999" onclick="clearGhGames()">🗑️ مسح ألعاب Cloud</button>
+      </div>
+      <div class="gh-status" id="ghStatus">لم يتم الإعداد بعد — أدخل بيانات المستودع واضغط حفظ</div>
+    </div>
+  </div>
+  <div class="stg-grp">
+    <div class="stg-item" style="flex-direction:column;align-items:flex-start;gap:8px">
+      <div style="display:flex;align-items:center;gap:12px;width:100%">
+        <div class="si-ico">📁</div>
+        <div class="si-inf">
+          <div class="si-t">مسار مجلد الروم</div>
+          <div class="si-d">URL أو مسار محلي — مثال: http://localhost:8080/roms/ أو ./roms/</div>
+        </div>
+      </div>
+      <div class="emu-path-wrap" style="width:100%;padding-right:52px">
+        <input class="emu-path-inp" id="romsPathInp" placeholder="http://localhost:8080/roms/">
+        <button class="emu-path-btn" onclick="pickRomFolder()" title="اختر مجلداً (File System API)">📂</button>
+        <button class="emu-path-btn" onclick="saveRomsPath()">حفظ</button>
+      </div>
+      <div style="padding-right:52px;font-size:11px;color:var(--hint)">بعد الحفظ يمكنك إضافة ألعاب بالمسار من نافذة كل نظام</div>
+    </div>
+  </div>
+  <div class="stg-lbl">محرك المحاكاة (Offline)</div>
+  <div class="stg-grp">
+    <div class="stg-item" style="flex-direction:column;align-items:flex-start;gap:8px">
+      <div style="display:flex;align-items:center;gap:12px;width:100%">
+        <div class="si-ico">🔧</div>
+        <div class="si-inf">
+          <div class="si-t">مسار EmulatorJS</div>
+          <div class="si-d">للعمل Offline: غيّر المسار إلى مجلد محلي يحتوي loader.js</div>
+        </div>
+      </div>
+      <div class="emu-path-wrap" style="width:100%;padding-right:52px">
+        <input class="emu-path-inp" id="ejsPathInp" placeholder="https://cdn.emulatorjs.org/latest/data/">
+        <button class="emu-path-btn" onclick="saveEjsPath()">حفظ</button>
+      </div>
+    </div>
+    <div class="stg-item" style="cursor:default">
+      <div class="si-ico">🎮</div>
+      <div class="si-inf"><div class="si-t">ذراع التحكم</div><div class="si-d" id="gpStatus">لا يوجد ذراع متصل</div></div>
+    </div>
+  </div>
+  <div class="stg-lbl">الحفظ التلقائي</div>
+  <div class="stg-grp">
+    <div class="stg-item">
+      <div class="si-ico">💾</div>
+      <div class="si-inf"><div class="si-t">حفظ تلقائي أثناء اللعب</div><div class="si-d">يحفظ كل 60 ثانية تلقائياً</div></div>
+      <button class="toggle on" id="asTgl" onclick="toggleAS()"></button>
+    </div>
+  </div>
+  <div class="stg-lbl">إدارة المكتبة</div>
+  <div class="stg-grp">
+    <div class="stg-item" onclick="clearAll()">
+      <div class="si-ico" style="color:var(--danger)">🗑️</div>
+      <div class="si-inf"><div class="si-t" style="color:var(--danger)">مسح كل الألعاب</div><div class="si-d">حذف جميع الروم من الذاكرة نهائياً</div></div>
+      <span class="si-arr">›</span>
+    </div>
+  </div>
+  <div class="stg-lbl">معلومات</div>
+  <div class="stg-grp">
+    <div class="stg-item" style="cursor:default"><div class="si-ico">🎮</div><div class="si-inf"><div class="si-t">المحرك</div><div class="si-d">EmulatorJS — مفتوح المصدر</div></div></div>
+    <div class="stg-item" style="cursor:default"><div class="si-ico">💾</div><div class="si-inf"><div class="si-t">التخزين</div><div class="si-d">IndexedDB — يدعم ملفات ضخمة</div></div></div>
+    <div class="stg-item" style="cursor:default"><div class="si-ico">📦</div><div class="si-inf"><div class="si-t">الإصدار</div><div class="si-d">Arcade Vault v5.0 — 26 Systems · GitHub Cloud · PWA</div></div></div>
+  </div>
+  <div class="stg-lbl">الأنظمة المدعومة</div>
+  <div class="stg-grp" id="settingsSys"></div>
+  <div style="text-align:center;padding:18px;color:var(--hint);font-size:10px;font-family:var(--fd)">ARCADE VAULT v5 · 26 SYSTEMS · GITHUB CLOUD · PWA READY</div>
+</div>
+
+</div><!-- /wrap -->
+
+<!-- EMULATOR OVERLAY -->
+<div id="emuOverlay">
+  <div class="emu-bar">
+    <button class="emu-back" onclick="exitEmu()">‹</button>
+    <div class="emu-inf">
+      <div class="emu-name" id="emuName">—</div>
+      <div class="emu-sys" id="emuSys">—</div>
+    </div>
+    <div class="emu-as" id="emuAS"><div class="emu-as-dot"></div><span>AUTO</span></div>
+    <div class="emu-btns">
+      <button class="emu-btn" id="btnSave" onclick="doSave()">💾 حفظ</button>
+      <button class="emu-btn" onclick="doLoad()">📂 تحميل</button>
+      <button class="emu-btn" onclick="doFS()">⛶</button>
+    </div>
+  </div>
+  <div id="emuContent">
+    <div id="emuLoad">
+      <div class="el-cover"><canvas id="elCvs" width="110" height="148"></canvas></div>
+      <div class="el-title" id="elTitle">جاري التحميل...</div>
+      <div class="el-sys" id="elSys">LOADING</div>
+      <div class="el-bar"><div class="el-bar-fill"></div></div>
+      <div class="el-tip">يحتاج اتصال إنترنت للتحميل الأول — أو غيّر المسار في الإعدادات للعمل Offline</div>
+    </div>
+    <iframe id="emuFrame" allowfullscreen allow="autoplay;fullscreen;gamepad"></iframe>
+  </div>
+</div>
+
+<!-- SYSTEM MODAL -->
+<div class="modal-bg" id="sysModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-grip"></div>
+    <div class="modal-head">
+      <div class="mh-ico" id="mhIco"></div>
+      <div class="mh-info"><div class="mh-name" id="mhName"></div><div class="mh-full" id="mhFull"></div></div>
+      <button class="mh-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- IMPORT PROGRESS -->
+<div id="importProg">
+  <div class="ip-t">⏳ جاري استيراد الألعاب...</div>
+  <div class="ip-f" id="ipFile"></div>
+  <div class="ip-bar"><div class="ip-fill" id="ipFill" style="width:0"></div></div>
+  <div class="ip-c" id="ipCount">0 / 0</div>
+</div>
+
+<!-- FILE INPUTS -->
+<input type="file" id="inp-multi" style="display:none" multiple>
+<input type="file" id="inp-sys"   style="display:none" multiple>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- GITHUB PROGRESS -->
+<div id="ghProg"><div class="gh-spin"></div><span id="ghProgTxt">جاري الجلب...</span></div>
+
+<!-- ADD BY URL MODAL -->
+<div class="url-modal-bg" id="urlModal" onclick="if(event.target===this)closeUrlModal()">
+  <div class="url-modal-box">
+    <h3>🔗 إضافة لعبة برابط خارجي</h3>
+    <div class="url-field">
+      <label>رابط ملف الروم (URL)</label>
+      <input id="urlGameUrl" placeholder="https://example.com/roms/game.nes" oninput="autoDetectSysFromUrl(this.value)">
+    </div>
+    <div class="url-field">
+      <label>اسم اللعبة</label>
+      <input id="urlGameName" placeholder="اسم اللعبة كما يظهر في المكتبة">
+    </div>
+    <div class="url-field">
+      <label>النظام</label>
+      <select id="urlGameSys">
+        <option value="">— اختر النظام —</option>
+      </select>
+    </div>
+    <div class="url-modal-btns">
+      <button class="url-modal-cancel" onclick="closeUrlModal()">إلغاء</button>
+      <button class="url-modal-add" onclick="addGameByUrl()">➕ إضافة</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════ SYSTEMS DB ════════════ */
+const SYS=[
+  // ══ NINTENDO ══
+  {id:'nes',    n:'NES',         f:'Nintendo Entertainment System',  c:'nes',         co:'nintendo',exts:['.nes'],                        ico:'🎮',col:'#e60012',yr:1983},
+  {id:'snes',   n:'SNES',        f:'Super Nintendo',                 c:'snes',        co:'nintendo',exts:['.smc','.sfc','.zip'],           ico:'🎮',col:'#7B2FBE',yr:1990},
+  {id:'n64',    n:'N64',         f:'Nintendo 64',                    c:'n64',         co:'nintendo',exts:['.n64','.z64','.v64','.zip'],    ico:'🎮',col:'#009ac7',yr:1996},
+  {id:'gc',     n:'GameCube',    f:'Nintendo GameCube',              c:'dolphin',     co:'nintendo',exts:['.iso','.gcm','.gcz','.rvz','.wbfs'],ico:'🎲',col:'#6a0dad',yr:2001},
+  {id:'gb',     n:'Game Boy',    f:'Nintendo Game Boy',              c:'gb',          co:'nintendo',exts:['.gb'],                          ico:'🕹️',col:'#8BAC0F',yr:1989},
+  {id:'gbc',    n:'GBC',         f:'Game Boy Color',                 c:'gbc',         co:'nintendo',exts:['.gbc'],                         ico:'🕹️',col:'#00bfff',yr:1998},
+  {id:'gba',    n:'GBA',         f:'Game Boy Advance',               c:'gba',         co:'nintendo',exts:['.gba'],                         ico:'🕹️',col:'#9B59B6',yr:2001},
+  {id:'nds',    n:'NDS',         f:'Nintendo DS',                    c:'nds',         co:'nintendo',exts:['.nds'],                         ico:'🎮',col:'#e52421',yr:2004},
+  // ══ SEGA ══
+  {id:'md',     n:'Mega Drive',  f:'Sega Mega Drive / Genesis',      c:'segaMD',      co:'sega',    exts:['.md','.gen','.smd','.bin','.zip'],ico:'🕹️',col:'#0057a8',yr:1988},
+  {id:'sms',    n:'Master Sys',  f:'Sega Master System',             c:'segaMS',      co:'sega',    exts:['.sms'],                         ico:'🕹️',col:'#1a6b9a',yr:1985},
+  {id:'gg',     n:'Game Gear',   f:'Sega Game Gear',                 c:'segaGG',      co:'sega',    exts:['.gg'],                          ico:'🕹️',col:'#0a9060',yr:1990},
+  {id:'scd',    n:'Sega CD',     f:'Sega CD / Mega-CD',              c:'segaCD',      co:'sega',    exts:['.bin','.cue','.iso'],            ico:'💿',col:'#1a8a3c',yr:1991,needsBios:true},
+  {id:'s32x',   n:'Sega 32X',    f:'Sega 32X',                       c:'sega32x',     co:'sega',    exts:['.32x','.bin'],                  ico:'🕹️',col:'#c0392b',yr:1994},
+  // ══ SONY ══
+  {id:'psx',    n:'PlayStation', f:'PlayStation 1',                  c:'psx',         co:'sony',    exts:['.bin','.cue','.img','.pbp','.chd'],ico:'🎮',col:'#003791',yr:1994,needsBios:true},
+  {id:'psp',    n:'PSP',         f:'PlayStation Portable',           c:'ppsspp',      co:'sony',    exts:['.iso','.cso','.pbp'],            ico:'🎮',col:'#003087',yr:2005},
+  // ══ ARCADE ══
+  {id:'fbneo',  n:'FBNeo',       f:'Final Burn Neo (Arcade)',        c:'fbneo',       co:'arcade',  exts:['.zip'],                         ico:'🕹️',col:'#ffd700',yr:1990},
+  {id:'mame',   n:'MAME',        f:'MAME 2003 Plus',                 c:'mame2003plus',co:'arcade',  exts:['.zip'],                         ico:'🕹️',col:'#ff4444',yr:1997},
+  // ══ ATARI ══
+  {id:'a2600',  n:'Atari 2600',  f:'Atari 2600 VCS',                 c:'atari2600',   co:'atari',   exts:['.a26','.bin','.rom'],            ico:'🕹️',col:'#ff6600',yr:1977},
+  {id:'a7800',  n:'Atari 7800',  f:'Atari 7800 ProSystem',           c:'atari7800',   co:'atari',   exts:['.a78','.bin'],                  ico:'🕹️',col:'#cc4400',yr:1984},
+  {id:'lynx',   n:'Lynx',        f:'Atari Lynx',                     c:'lynx',        co:'atari',   exts:['.lnx'],                         ico:'🕹️',col:'#ff8c00',yr:1989},
+  // ══ OTHER ══
+  {id:'pce',    n:'PC Engine',   f:'PC Engine / TurboGrafx-16',      c:'pce',         co:'other',   exts:['.pce','.cue','.zip'],            ico:'🕹️',col:'#ff6b35',yr:1987},
+  {id:'ngp',    n:'Neo Geo P',   f:'Neo Geo Pocket',                 c:'ngp',         co:'other',   exts:['.ngp'],                         ico:'🕹️',col:'#4A0E8F',yr:1998},
+  {id:'ngpc',   n:'NGP Color',   f:'Neo Geo Pocket Color',           c:'ngp',         co:'other',   exts:['.ngc','.ngpc'],                 ico:'🕹️',col:'#E8B800',yr:1999},
+  {id:'ws',     n:'WonderSwan',  f:'WonderSwan',                     c:'ws',          co:'other',   exts:['.ws'],                          ico:'🕹️',col:'#0099cc',yr:1999},
+  {id:'wsc',    n:'WonderSwan C',f:'WonderSwan Color',               c:'wsc',         co:'other',   exts:['.wsc'],                         ico:'🕹️',col:'#ff66aa',yr:2000},
+  {id:'dos',    n:'DOS',         f:'MS-DOS',                         c:'dosbox',      co:'other',   exts:['.zip','.exe'],                  ico:'💻',col:'#00ff66',yr:1981},
+];
+
+/* ════════════ INDEXEDDB ════════════ */
+let DB=null;
+const DB_N='ArcadeVault3',DB_V=1,DB_S='roms';
+
+function openDB(){
+  if(DB) return Promise.resolve(DB);
+  return new Promise((ok,err)=>{
+    const r=indexedDB.open(DB_N,DB_V);
+    r.onupgradeneeded=e=>{
+      const db=e.target.result;
+      if(!db.objectStoreNames.contains(DB_S)){
+        const s=db.createObjectStore(DB_S,{keyPath:'id'});
+        s.createIndex('sysId','sysId',{unique:false});
+      }
+    };
+    r.onsuccess=e=>{DB=e.target.result;ok(DB)};
+    r.onerror=e=>err(e.target.error);
+  });
+}
+async function dbPut(o){const db=await openDB();return new Promise((ok,err)=>{const tx=db.transaction([DB_S],'readwrite');tx.objectStore(DB_S).put(o);tx.oncomplete=()=>ok(true);tx.onerror=e=>err(e.target.error)})}
+async function dbGet(id){const db=await openDB();return new Promise((ok,err)=>{const r=db.transaction([DB_S],'readonly').objectStore(DB_S).get(id);r.onsuccess=e=>ok(e.target.result);r.onerror=e=>err(e.target.error)})}
+async function dbAll(){const db=await openDB();return new Promise((ok,err)=>{const r=db.transaction([DB_S],'readonly').objectStore(DB_S).getAll();r.onsuccess=e=>ok(e.target.result||[]);r.onerror=e=>err(e.target.error)})}
+async function dbDel(id){const db=await openDB();return new Promise((ok,err)=>{const tx=db.transaction([DB_S],'readwrite');tx.objectStore(DB_S).delete(id);tx.oncomplete=()=>ok(true);tx.onerror=e=>err(e.target.error)})}
+async function dbClear(){const db=await openDB();return new Promise((ok,err)=>{const tx=db.transaction([DB_S],'readwrite');tx.objectStore(DB_S).clear();tx.oncomplete=()=>ok(true);tx.onerror=e=>err(e.target.error)})}
+async function dbPatch(id,field,val){try{const o=await dbGet(id);if(o){o[field]=val;await dbPut(o)}}catch(e){}}
+
+/* ════════════ STATE ════════════ */
+let games=[];       // metadata only (no ArrayBuffer)
+let curSys=null;    // modal
+let activeG=null;   // playing
+let libF='all';
+let sysF='all';
+let autoSave=true;
+let asTimer=null;
+let blobUrls=[];
+let ejsPath='https://cdn.emulatorjs.org/latest/data/';
+let romsBasePath=''; // base URL/path for ROM files
+
+/* ════════════ GITHUB CONFIG ════════════ */
+let ghConfig={owner:'',repo:'',branch:'main',folder:'',token:''};
+let ghSynced=false;
+
+/* ════════════ COVER CACHE ════════════ */
+const coverCache=new Map(); // key: "name|col|ico|w|h"
+
+/* ════════════ COVER GENERATOR ════════════ */
+function hashS(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=(h*0x01000193)>>>0}return h}
+
+function genCover(name,col,ico,w,h){
+  w=w||200;h=h||280;
+  const ck=name+'|'+col+'|'+ico+'|'+w+'|'+h;
+  if(coverCache.has(ck))return coverCache.get(ck);
+  const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+  const ctx=cv.getContext('2d');
+  const hv=hashS(name||'x');
+  const h1=(hv%360+360)%360;
+  const h2=(h1+60+((hv>>8)%80))%360;
+  const h3=(h1+160+((hv>>16)%80))%360;
+
+  // BG gradient
+  const g=ctx.createLinearGradient(0,0,w,h);
+  g.addColorStop(0,`hsl(${h1},70%,10%)`);
+  g.addColorStop(.55,`hsl(${h2},60%,7%)`);
+  g.addColorStop(1,`hsl(${h3},75%,6%)`);
+  ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+
+  // Pattern
+  ctx.save();ctx.globalAlpha=.1;
+  const pt=(hv>>12)%3;const ps=28+((hv>>4)%20);
+  if(pt===0){
+    ctx.fillStyle=col;
+    for(let x=0;x<w;x+=ps)for(let y=0;y<h;y+=ps){ctx.beginPath();ctx.arc(x+ps/2,y+ps/2,1.5,0,Math.PI*2);ctx.fill()}
+  } else if(pt===1){
+    ctx.strokeStyle=col;ctx.lineWidth=1;
+    for(let i=-h;i<w+h;i+=ps){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i+h,h);ctx.stroke()}
+  } else {
+    ctx.fillStyle=col;
+    for(let y=0;y<h;y+=ps){ctx.fillRect(0,y,w,1)}
+  }
+  ctx.restore();
+
+  // Glow
+  const rg=ctx.createRadialGradient(w/2,h*.4,0,w/2,h*.4,w*.6);
+  rg.addColorStop(0,col+'44');rg.addColorStop(.5,col+'18');rg.addColorStop(1,'transparent');
+  ctx.fillStyle=rg;ctx.fillRect(0,0,w,h);
+
+  // Icon
+  ctx.save();ctx.globalAlpha=.88;
+  const isz=Math.min(w,h)*.36;
+  ctx.font=isz+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.shadowColor=col;ctx.shadowBlur=isz*.5;
+  ctx.fillText(ico||'🎮',w/2,h*.38);
+  ctx.restore();
+
+  // Bottom dark grad
+  const bg2=ctx.createLinearGradient(0,h*.55,0,h);
+  bg2.addColorStop(0,'transparent');bg2.addColorStop(.4,'rgba(0,0,0,.7)');bg2.addColorStop(1,'rgba(0,0,0,.95)');
+  ctx.fillStyle=bg2;ctx.fillRect(0,h*.5,w,h);
+
+  // Name
+  const nm=(name||'').replace(/\([^)]*\)/g,'').trim();
+  ctx.save();ctx.textAlign='center';ctx.fillStyle='#fff';
+  let fs=Math.min(w*.085,14);
+  ctx.font=`700 ${fs}px Orbitron,monospace`;
+  const mxW=w-18;const words=nm.split(/\s+/);const lines=[];let cur='';
+  for(const wd of words){const t=cur?cur+' '+wd:wd;if(ctx.measureText(t).width>mxW&&cur){lines.push(cur);cur=wd}else cur=t}
+  if(cur)lines.push(cur);
+  const lh=fs*1.3;const ty=h-lines.length*lh-8;
+  ctx.shadowColor='rgba(0,0,0,.9)';ctx.shadowBlur=6;
+  lines.forEach((l,i)=>ctx.fillText(l,w/2,ty+i*lh+lh/2));
+  ctx.restore();
+
+  // System badge
+  const sys=SYS.find(s=>s.col===col);
+  if(sys){
+    ctx.save();
+    ctx.font='700 8px Orbitron,monospace';
+    const bw=ctx.measureText(sys.n).width+12;
+    ctx.fillStyle=col+'cc';
+    rrect(ctx,w-bw-4,4,bw,16,4);ctx.fill();
+    ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(sys.n,w-bw/2-4,12);
+    ctx.restore();
+  }
+  coverCache.set(ck,cv);
+  return cv;
+}
+
+function rrect(ctx,x,y,w,h,r){
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);
+  ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();
+}
+
+/* ════════════ HELPERS ════════════ */
+function inp(t){return document.getElementById('inp-'+t)}
+function fmtSz(b){if(!b)return'?';if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(0)+'KB';return(b/1048576).toFixed(1)+'MB'}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function ago(ts){const s=(Date.now()-ts)/1e3;if(s<60)return'الآن';if(s<3600)return Math.floor(s/60)+'د';if(s<86400)return Math.floor(s/3600)+'س';return Math.floor(s/86400)+'ي'}
+function sl(ms){return new Promise(r=>setTimeout(r,ms))}
+
+let _tt;
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('on'),3000)}
+
+/* ════════════ INIT ════════════ */
+(async()=>{
+  try{const all=await dbAll();
+    games=all.map(g=>({id:g.id,sysId:g.sysId,name:g.name,ext:g.ext,size:g.size,added:g.added,lastPlayed:g.lastPlayed||0,hasSave:g.hasSave||false,favorite:g.favorite||false,fromGitHub:g.fromGitHub||false,fromUrl:g.fromUrl||false,rawUrl:g.rawUrl||'',fromPath:g.fromPath||false,filePath:g.filePath||''}));
+  }catch(e){games=[]}
+
+  // Load settings
+  try{const s=JSON.parse(localStorage.getItem('av3s')||'{}');autoSave=s.as!==false}catch(e){}
+  try{const ep=localStorage.getItem('av4ejs');if(ep){ejsPath=ep;document.getElementById('ejsPathInp').value=ep}else{document.getElementById('ejsPathInp').value=ejsPath}}catch(e){}
+  try{const rp=localStorage.getItem('av4roms');if(rp){romsBasePath=rp;document.getElementById('romsPathInp').value=rp}}catch(e){}
+
+  // Load GitHub config
+  try{
+    const gc=JSON.parse(localStorage.getItem('av5gh')||'{}');
+    if(gc.owner){
+      ghConfig={...ghConfig,...gc};
+      document.getElementById('ghOwner').value=ghConfig.owner||'';
+      document.getElementById('ghRepo').value=ghConfig.repo||'';
+      document.getElementById('ghBranch').value=ghConfig.branch||'main';
+      document.getElementById('ghFolder').value=ghConfig.folder||'';
+      document.getElementById('ghToken').value=ghConfig.token||'';
+      setGhStatus('✅ مُعَدّ — '+ghConfig.owner+'/'+ghConfig.repo,'ok');
+    }
+  }catch(e){}
+
+  document.getElementById('asTgl').className='toggle'+(autoSave?' on':'');
+
+  // Populate URL modal system selector
+  const sel=document.getElementById('urlGameSys');
+  SYS.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.ico+' '+s.f;sel.appendChild(o)});
+
+  renderSysGrid();renderLib();renderStgSys();updateStats();
+  updateGpStatus();
+
+  // Auto-sync from GitHub if configured
+  if(ghConfig.owner&&ghConfig.repo){
+    setTimeout(()=>fetchGamesFromGitHub(false,true),1200); // silent auto-sync
+  }
+
+  // Drag on hero
+  const hz=document.getElementById('heroZone');
+  hz.addEventListener('dragover',e=>{e.preventDefault();hz.classList.add('drag')});
+  hz.addEventListener('dragleave',()=>hz.classList.remove('drag'));
+  hz.addEventListener('drop',e=>{e.preventDefault();hz.classList.remove('drag');handleFiles([...e.dataTransfer.files])});
+
+  // Global drag
+  document.addEventListener('dragover',e=>{if(!e.target.closest('#heroZone,#sysModal'))e.preventDefault()});
+  document.addEventListener('drop',e=>{
+    if(e.target.closest('#heroZone,#sysModal'))return;
+    e.preventDefault();
+    const f=[...e.dataTransfer.files];if(f.length)handleFiles(f);
+  });
+
+  // File inputs
+  inp('multi').addEventListener('change',e=>{const f=[...e.target.files];e.target.value='';if(f.length)handleFiles(f)});
+  inp('sys').addEventListener('change',e=>{const f=[...e.target.files];e.target.value='';if(f.length)handleFiles(f,curSys)});
+
+  // postMessage from emulator
+  window.addEventListener('message',onEmuMsg);
+
+  // ESC
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('emuOverlay').classList.contains('on'))exitEmu()});
+})();
+
+/* ════════════ FILE HANDLING ════════════ */
+function detectSys(name){
+  const e='.'+name.split('.').pop().toLowerCase();
+  return SYS.find(s=>s.exts.includes(e))||null;
+}
+
+async function handleFiles(files, forceSys){
+  const valid=[],invalid=[];
+  for(const f of files){
+    const s=forceSys||detectSys(f.name);
+    if(s)valid.push({f,s});else invalid.push(f.name);
+  }
+  if(invalid.length)toast('⚠️ '+invalid.length+' ملف غير مدعوم');
+  if(!valid.length)return;
+
+  const prog=document.getElementById('importProg');
+  prog.classList.add('on');
+  let added=0,skipped=0,erred=0,first=null;
+
+  for(let i=0;i<valid.length;i++){
+    const {f,s}=valid[i];
+    document.getElementById('ipFile').textContent=f.name;
+    document.getElementById('ipFill').style.width=Math.round(i/valid.length*100)+'%';
+    document.getElementById('ipCount').textContent=(i+1)+' / '+valid.length;
+    const name=f.name.replace(/\.[^.]+$/,'');
+    const ext='.'+f.name.split('.').pop().toLowerCase();
+    if(games.find(g=>g.name===name&&g.sysId===s.id)){skipped++;continue}
+    try{
+      const data=await new Promise((ok,err)=>{const r=new FileReader();r.onload=e=>ok(e.target.result);r.onerror=()=>err(new Error('read fail'));r.readAsArrayBuffer(f)});
+      const id='r'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+      const rom={id,sysId:s.id,name,ext,size:f.size,added:Date.now(),lastPlayed:0,hasSave:false,favorite:false,data};
+      await dbPut(rom);
+      const meta={id,sysId:s.id,name,ext,size:f.size,added:Date.now(),lastPlayed:0,hasSave:false,favorite:false};
+      games.unshift(meta);
+      added++;
+      if(!first)first={...meta,data};
+    }catch(e){erred++}
+  }
+
+  document.getElementById('ipFill').style.width='100%';
+  await sl(300);
+  prog.classList.remove('on');
+  updateStats();renderSysGrid();renderLib();renderModal();
+  const msg=[];if(added)msg.push('✅ أُضيف '+added);if(skipped)msg.push('⏭️ مكرر '+skipped);if(erred)msg.push('❌ خطأ '+erred);
+  toast(msg.join('  '));
+  if(added===1&&first){const s=SYS.find(x=>x.id===first.sysId);setTimeout(()=>launchRom(first,s),500)}
+}
+
+/* ════════════ SYSTEMS GRID ════════════ */
+function renderSysGrid(f){
+  if(f!==undefined)sysF=f;
+  const grid=document.getElementById('sysGrid');grid.innerHTML='';
+  const list=sysF==='all'?SYS:SYS.filter(s=>s.co===sysF);
+  list.forEach((s,i)=>{
+    const cnt=games.filter(g=>g.sysId===s.id).length;
+    const el=document.createElement('div');
+    el.className='syscard';
+    el.style.cssText='--sc:'+s.col+';animation-delay:'+i*25+'ms';
+    el.innerHTML='<div class="sc-ico">'+s.ico+'</div><div class="sc-name">'+s.n+'</div><div class="sc-full">'+s.f+'</div><div class="sc-bot"><span class="sc-yr">'+s.yr+'</span><span class="sc-cnt'+(cnt?' has':'')+'">'+( cnt?cnt+' ROM':'+ ROM')+'</span></div>';
+    el.addEventListener('click',()=>openModal(s.id));
+    grid.appendChild(el);
+  });
+}
+
+function filterSys(f,btn){
+  document.querySelectorAll('#sysFilters .fc').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');renderSysGrid(f);
+}
+
+/* ════════════ MODAL ════════════ */
+function openModal(sysId){
+  curSys=SYS.find(s=>s.id===sysId);if(!curSys)return;
+  document.getElementById('mhIco').textContent=curSys.ico;
+  document.getElementById('mhIco').style.cssText='background:'+curSys.col+'33;border:1px solid '+curSys.col;
+  document.getElementById('mhName').textContent=curSys.n;
+  document.getElementById('mhFull').textContent=curSys.f;
+  renderModal();
+  document.getElementById('sysModal').classList.add('on');
+}
+
+function closeModal(){document.getElementById('sysModal').classList.remove('on')}
+
+function renderModal(){
+  if(!curSys)return;
+  const s=curSys;
+  const sg=games.filter(g=>g.sysId===s.id).sort((a,b)=>b.lastPlayed-a.lastPlayed||b.added-a.added);
+  const body=document.getElementById('modalBody');
+  const exH=s.exts.map(e=>'<span class="extb">'+e+'</span>').join('');
+
+  // Needs BIOS warning
+  const biosWarn=s.needsBios?'<div style="background:rgba(255,180,0,.1);border:1px solid rgba(255,180,0,.3);border-radius:8px;padding:8px 12px;font-size:11px;color:#ffcc66;margin-bottom:10px">⚠️ يتطلب ملف BIOS — يُوضع في حقل BIOS URL أدناه</div>':''
+
+  // Upload zone
+  let h=biosWarn+'<div class="mdrop" id="mdrop" onclick="inp(\'sys\').click()"><span class="mdrop-ico">📂</span><div class="mdrop-title">رفع ملف روم</div><div class="mdrop-sub">اضغط أو اسحب — يدعم اختيار متعدد</div><div class="ext-row">'+exH+'</div></div>';
+
+  // ROM path section
+  if(romsBasePath){
+    const suggested=romsBasePath+(romsBasePath.endsWith('/')?'':'/');
+    h+='<div class="path-section">'
+      +'<div class="path-section-title">🌐 إضافة لعبة من مسار / URL</div>'
+      +'<div style="font-size:11px;color:var(--muted);margin-bottom:8px">المسار الأساسي: <span style="color:var(--success);font-family:var(--fd)">'+esc(suggested)+'</span></div>'
+      +'<div class="path-row">'
+      +'<input class="path-inp" id="pathGameName" placeholder="اسم اللعبة" style="max-width:140px">'
+      +'<input class="path-inp" id="pathGameFile" placeholder="filename.'+s.exts[0].replace('.','')+'"><br>'
+      +'</div>'
+      +'<div style="display:flex;gap:6px">'
+      +'<button class="path-btn ok" onclick="addGameFromPath()">➕ إضافة من المسار</button>'
+      +'</div>'
+      +'</div>';
+  } else {
+    h+='<div style="background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.1);border-radius:10px;padding:10px 12px;font-size:11px;color:var(--hint);margin-bottom:12px">💡 حدد مسار مجلد الروم في الإعدادات لإضافة ألعاب بدون رفع الملف</div>';
+  }
+
+  if(sg.length){
+    h+='<div class="mg-sec">SAVED — '+sg.length+'</div>';
+    sg.forEach(g=>{
+      const cdata=genCover(g.name,s.col,s.ico,72,96).toDataURL('image/jpeg',.7);
+      const lp=g.lastPlayed?'<span>'+ago(g.lastPlayed)+'</span>':'<span>جديد</span>';
+      const sv=g.hasSave?'<span class="mg-sv">✅ محفوظ</span>':'';
+      const pathBadge=g.fromPath?'<span class="path-badge">🌐 URL</span>':'';
+      h+='<div class="mg-item" style="--sc:'+s.col+'" id="mgi_'+g.id+'"><div class="mg-cov"><img src="'+cdata+'" style="width:100%;height:100%;display:block;border-radius:5px"></div><div class="mg-inf"><div class="mg-name">'+esc(g.name)+'</div><div class="mg-meta">'+lp+sv+pathBadge+'<span>'+fmtSz(g.size)+'</span></div></div><div class="mg-acts"><button class="mg-play" style="background:'+s.col+'" onclick="launch(\''+g.id+'\')">▶</button><button class="mg-del" onclick="delGame(\''+g.id+'\');event.stopPropagation()">✕</button></div></div>';
+    });
+  }
+  body.innerHTML=h;
+  const md=document.getElementById('mdrop');
+  if(md){
+    md.addEventListener('dragover',e=>{e.preventDefault();md.classList.add('drag')});
+    md.addEventListener('dragleave',()=>md.classList.remove('drag'));
+    md.addEventListener('drop',e=>{e.preventDefault();md.classList.remove('drag');const f=[...e.dataTransfer.files];if(f.length)handleFiles(f,curSys)});
+  }
+}
+
+/* ════════════ LIBRARY ════════════ */
+function renderLib(f){
+  if(f!==undefined)libF=f;
+  const bar=document.getElementById('libFilters');
+  const cnt={};games.forEach(g=>{cnt[g.sysId]=(cnt[g.sysId]||0)+1});
+  const syss=Object.keys(cnt).sort();
+  bar.innerHTML='<button class="fc'+(libF==='all'?' on':'')+'" onclick="filterLib(\'all\',this)">الكل ('+games.length+')</button>';
+  syss.forEach(sid=>{const s=SYS.find(x=>x.id===sid);if(!s)return;bar.innerHTML+='<button class="fc'+(libF===sid?' on':'')+'" onclick="filterLib(\''+sid+'\',this)">'+s.ico+' '+s.n+' ('+cnt[sid]+')</button>'});
+
+  const list=libF==='all'?[...games]:games.filter(g=>g.sysId===libF);
+  list.sort((a,b)=>b.lastPlayed-a.lastPlayed||b.added-a.added);
+  const el=document.getElementById('libContent');
+  if(!list.length){
+    el.innerHTML='<div class="empty"><span class="empty-ico">🕹️</span><div class="empty-t">لا توجد ألعاب</div><div class="empty-s">اذهب للرئيسية واختر نظاماً، أو اضغط "إضافة ألعاب"</div></div>';
+    return;
+  }
+  let h='<div class="covers">';
+  list.forEach((g,i)=>{
+    const s=SYS.find(x=>x.id===g.sysId)||{n:'?',ico:'🎮',col:'#8800ff'};
+    const rec=g.lastPlayed&&Date.now()-g.lastPlayed<86400000*7;
+    const isFav=g.favorite||false;
+    h+='<div class="gcard" style="--gc:'+s.col+';animation-delay:'+i*18+'ms" id="gc_'+g.id+'">'
+      +'<div class="gcard-img"><canvas id="cv_'+g.id+'" width="200" height="280"></canvas>'
+      +(g.hasSave?'<div class="save-badge"><div class="save-dot"></div>SAVED</div>':'')
+      +(rec?'<div class="recent-badge">▶ مؤخراً</div>':'')
+      +(g.fromGitHub?'<div class="gh-badge"><svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>Cloud</div>':'')
+      +(g.fromUrl?'<div class="url-badge">🔗 URL</div>':'')
+      +(g.fromPath&&!g.fromGitHub&&!g.fromUrl?'<div class="url-badge">🌐 URL</div>':'')
+      +'<button class="fav-btn'+(isFav?' active':'')+'\" onclick=\"toggleFav(\''+g.id+'\');event.stopPropagation()\">'+(isFav?'❤️':'🤍')+'</button>'
+      +'<div class="gcard-ov"><div class="ov-btns"><button class="ov-play" onclick="launch(\''+g.id+'\')">▶ تشغيل</button><button class="ov-del" onclick="delGame(\''+g.id+'\');event.stopPropagation()">🗑️</button></div></div>'
+      +'</div><div class="gcard-info"><div class="gc-name">'+esc(g.name)+'</div><div class="gc-meta"><span class="gc-sys">'+s.n+'</span><span class="gc-sz">'+(g.fromGitHub?'☁️ Cloud':g.fromUrl?'🔗 URL':fmtSz(g.size))+'</span></div></div></div>';
+  });
+  h+='</div>';
+  el.innerHTML=h;
+  requestAnimationFrame(()=>{
+    list.forEach(g=>{
+      const s=SYS.find(x=>x.id===g.sysId)||{ico:'🎮',col:'#8800ff'};
+      const cv=document.getElementById('cv_'+g.id);if(!cv)return;
+      const src=genCover(g.name,s.col,s.ico,200,280);
+      cv.getContext('2d').drawImage(src,0,0);
+    });
+  });
+}
+
+function filterLib(f,btn){
+  document.querySelectorAll('#libFilters .fc').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');renderLib(f);
+}
+
+/* ════════════ GAME ACTIONS ════════════ */
+async function launch(id){
+  closeModal();
+  let rom;
+  try{rom=await dbGet(id)}catch(e){toast('❌ خطأ في التحميل');return}
+  if(!rom){toast('❌ اللعبة غير موجودة');return}
+
+  const s=SYS.find(x=>x.id===rom.sysId)||SYS[0];
+
+  // ──── Cloud / URL game: stream directly into RAM ────
+  const fetchUrl=rom.rawUrl||(rom.fromPath?rom.filePath:'');
+  if(!rom.data && fetchUrl){
+    const label=rom.fromGitHub?'☁️ GitHub':'🔗 URL';
+    toast(label+' — جاري التحميل...');
+    try{
+      const fetchHeaders={};
+      if(rom.fromGitHub&&ghConfig.token)fetchHeaders['Authorization']='token '+ghConfig.token;
+      const resp=await fetch(fetchUrl,{headers:fetchHeaders});
+      if(!resp.ok)throw new Error('HTTP '+resp.status);
+      // Stream into ArrayBuffer (RAM only — no disk storage)
+      rom.data=await resp.arrayBuffer();
+    }catch(e){
+      toast('❌ فشل التحميل: '+e.message);
+      return;
+    }
+  }
+
+  if(!rom.data){toast('❌ الملف غير موجود في الذاكرة');return}
+  launchRom(rom,s);
+}
+
+async function delGame(id){
+  const g=games.find(x=>x.id===id);if(!g)return;
+  if(!confirm('حذف "'+g.name+'"؟'))return;
+  games=games.filter(x=>x.id!==id);
+  try{await dbDel(id)}catch(e){}
+  updateStats();renderSysGrid();renderLib();renderModal();
+  toast('🗑️ حُذف: '+g.name);
+}
+
+async function clearAll(){
+  if(!games.length){toast('المكتبة فارغة');return}
+  if(!confirm('حذف جميع الألعاب نهائياً؟'))return;
+  games=[];
+  try{await dbClear()}catch(e){}
+  updateStats();renderSysGrid();renderLib();
+  toast('🗑️ مُسحت المكتبة');
+}
+
+/* ════════════ EMULATOR ════════════ */
+function launchRom(rom,sys){
+  if(!rom||!rom.data){launch(rom.id);return}
+  activeG={rom,sys};
+  freeBlobUrls();
+
+  const rb=new Blob([rom.data],{type:'application/octet-stream'});
+  const ru=URL.createObjectURL(rb);
+  blobUrls.push(ru);
+
+  const emuHtml=buildEmuHtml(ru,rom.name,sys.c,sys.col,rom.id);
+  const hb=new Blob([emuHtml],{type:'text/html'});
+  const hu=URL.createObjectURL(hb);
+  blobUrls.push(hu);
+
+  document.getElementById('emuName').textContent=rom.name;
+  document.getElementById('emuSys').textContent=sys.f;
+  document.getElementById('elTitle').textContent=rom.name;
+  document.getElementById('elSys').textContent=sys.f;
+
+  const elcv=document.getElementById('elCvs');
+  const cov=genCover(rom.name,sys.col,sys.ico,110,148);
+  elcv.width=110;elcv.height=148;
+  elcv.getContext('2d').drawImage(cov,0,0);
+
+  document.getElementById('emuLoad').classList.remove('gone');
+  document.getElementById('emuOverlay').classList.add('on');
+  document.body.style.overflow='hidden';
+
+  document.getElementById('emuAS').className='emu-as'+(autoSave?' on':'');
+
+  const fr=document.getElementById('emuFrame');
+  fr.onload=()=>{
+    setTimeout(()=>document.getElementById('emuLoad').classList.add('gone'),1800);
+    if(autoSave)startAS();
+  };
+  fr.src=hu;
+
+  const m=games.find(g=>g.id===rom.id);
+  if(m){m.lastPlayed=Date.now();dbPatch(rom.id,'lastPlayed',m.lastPlayed)}
+}
+
+function buildEmuHtml(romUrl,name,core,color,romId){
+  const sn=name.replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/\$/g,'\\$');
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;background:#000;overflow:hidden}#g{width:100%;height:100%;display:flex;align-items:center;justify-content:center}#e{width:100%;height:100%}</style></head><body><div id="g"><div id="e"></div></div>'
+    +'<script>'
+    +'window.EJS_player="#e";'
+    +'window.EJS_gameName=`'+sn+'`;'
+    +'window.EJS_biosUrl="";'
+    +'window.EJS_gameUrl="'+romUrl+'";'
+    +'window.EJS_core="'+core+'";'
+    +'window.EJS_pathtodata="'+ejsPath+'";'
+    +'window.EJS_startOnLoaded=true;'
+    +'window.EJS_color="'+color+'";'
+    +'window.EJS_backgroundColor="#000000";'
+    +'window.EJS_defaultOptions={"save-state-slot":"1","save-state-location":"keep in browser"};'
+    +'window.EJS_Buttons={playPause:true,restart:true,mute:true,settings:true,fullscreen:true,saveState:true,loadState:true,gamepad:true,volume:true,saveSavFiles:true,loadSavFiles:true,screenshot:true,screenRecord:false,cheat:false};'
+    +'window.EJS_onGameStart=function(){window.parent.postMessage({t:"started",id:"'+romId+'"},"*")};'
+    +'window.EJS_onSaveState=function(){window.parent.postMessage({t:"saved",id:"'+romId+'"},"*")};'
+    +'window.EJS_onLoadState=function(){window.parent.postMessage({t:"loaded",id:"'+romId+'"},"*")};'
+    +'window.addEventListener("message",function(e){if(!e.data)return;try{if(e.data.t==="save")EJS_emulator.gameManager.saveState(0);if(e.data.t==="load")EJS_emulator.gameManager.loadState(0)}catch(x){}});'
+    +'<\/script>'
+    +'<script src="'+ejsPath+'loader.js"><\/script>'
+    +'</body></html>';
+}
+
+function onEmuMsg(e){
+  if(!e.data||!e.data.t)return;
+  const {t,id}=e.data;
+  if(t==='started'){document.getElementById('emuLoad').classList.add('gone')}
+  if(t==='saved'){
+    const m=games.find(g=>g.id===id);
+    if(m&&!m.hasSave){m.hasSave=true;dbPatch(id,'hasSave',true)}
+    const sb=document.querySelector('#gc_'+id+' .save-badge');
+    if(sb)sb.style.opacity='1';
+    const btn=document.getElementById('btnSave');
+    btn.textContent='✅ محفوظ';btn.classList.add('saved');
+    setTimeout(()=>{btn.textContent='💾 حفظ';btn.classList.remove('saved')},2000);
+  }
+  if(t==='loaded')toast('✅ تم تحميل الحالة');
+}
+
+/* ════════════ AUTO SAVE ════════════ */
+function startAS(){
+  clearAS();
+  if(!autoSave)return;
+  asTimer=setInterval(()=>{
+    if(document.getElementById('emuOverlay').classList.contains('on'))trigSave(true);
+  },60000);
+}
+function clearAS(){if(asTimer){clearInterval(asTimer);asTimer=null}}
+
+function trigSave(auto){
+  try{document.getElementById('emuFrame').contentWindow.postMessage({t:'save'},'*')}catch(e){}
+  if(auto){const b=document.getElementById('btnSave');b.classList.add('saved');setTimeout(()=>b.classList.remove('saved'),1500)}
+}
+
+function doSave(){trigSave(false);toast('💾 جاري الحفظ...')}
+function doLoad(){try{document.getElementById('emuFrame').contentWindow.postMessage({t:'load'},'*')}catch(e){}toast('📂 جاري تحميل الحالة...')}
+function doFS(){const el=document.getElementById('emuContent');if(document.fullscreenElement)document.exitFullscreen?.();else el.requestFullscreen?.().catch(()=>{})}
+
+function toggleAS(){
+  autoSave=!autoSave;
+  document.getElementById('asTgl').className='toggle'+(autoSave?' on':'');
+  document.getElementById('emuAS').className='emu-as'+(autoSave?' on':'');
+  localStorage.setItem('av3s',JSON.stringify({as:autoSave}));
+  if(autoSave&&document.getElementById('emuOverlay').classList.contains('on'))startAS();else clearAS();
+  toast(autoSave?'✅ الحفظ التلقائي مفعّل':'⏸️ الحفظ التلقائي متوقف');
+}
+
+function exitEmu(){
+  if(!confirm('الخروج من اللعبة؟'))return;
+  trigSave(true);
+  setTimeout(()=>{
+    clearAS();
+    document.getElementById('emuOverlay').classList.remove('on');
+    document.getElementById('emuFrame').src='about:blank';
+    document.body.style.overflow='';
+    freeBlobUrls();activeG=null;
+    renderLib();
+  },600);
+}
+
+function freeBlobUrls(){blobUrls.forEach(u=>URL.revokeObjectURL(u));blobUrls=[]}
+
+/* ════════════ FAVORITES ════════════ */
+async function toggleFav(id){
+  const g=games.find(x=>x.id===id);if(!g)return;
+  g.favorite=!g.favorite;
+  await dbPatch(id,'favorite',g.favorite);
+  updateFavBadge();
+  renderLib();renderFav();
+  toast(g.favorite?'❤️ أُضيف للمفضلة':'💔 أُزيل من المفضلة');
+}
+
+function renderFav(){
+  const list=games.filter(g=>g.favorite).sort((a,b)=>b.lastPlayed-a.lastPlayed||b.added-a.added);
+  const el=document.getElementById('favContent');
+  if(!list.length){
+    el.innerHTML='<div class="empty"><span class="empty-ico">❤️</span><div class="empty-t">لا توجد ألعاب مفضلة</div><div class="empty-s">اضغط على قلب أي لعبة في المكتبة لإضافتها هنا</div></div>';
+    return;
+  }
+  let h='<div class="covers">';
+  list.forEach((g,i)=>{
+    const s=SYS.find(x=>x.id===g.sysId)||{n:'?',ico:'🎮',col:'#8800ff'};
+    h+='<div class="gcard" style="--gc:'+s.col+';animation-delay:'+i*18+'ms" id="fgc_'+g.id+'">'
+      +'<div class="gcard-img"><canvas id="fcv_'+g.id+'" width="200" height="280"></canvas>'
+      +(g.hasSave?'<div class="save-badge"><div class="save-dot"></div>SAVED</div>':'')
+      +'<button class="fav-btn active" onclick="toggleFav(\''+g.id+'\');event.stopPropagation()">❤️</button>'
+      +'<div class="gcard-ov"><div class="ov-btns"><button class="ov-play" onclick="launch(\''+g.id+'\')">▶ تشغيل</button><button class="ov-del" onclick="delGame(\''+g.id+'\');event.stopPropagation()">🗑️</button></div></div>'
+      +'</div><div class="gcard-info"><div class="gc-name">'+esc(g.name)+'</div><div class="gc-meta"><span class="gc-sys">'+s.n+'</span><span class="gc-sz">'+fmtSz(g.size)+'</span></div></div></div>';
+  });
+  h+='</div>';
+  el.innerHTML=h;
+  requestAnimationFrame(()=>list.forEach(g=>{
+    const s=SYS.find(x=>x.id===g.sysId)||{ico:'🎮',col:'#8800ff'};
+    const cv=document.getElementById('fcv_'+g.id);if(!cv)return;
+    cv.getContext('2d').drawImage(genCover(g.name,s.col,s.ico,200,280),0,0);
+  }));
+}
+
+function updateFavBadge(){
+  const n=games.filter(g=>g.favorite).length;
+  document.getElementById('favBadge').textContent=n;
+}
+
+/* ════════════ GAMEPAD API ════════════ */
+let connectedGamepads=0;
+function updateGpStatus(){
+  const gps=[...navigator.getGamepads()].filter(Boolean);
+  connectedGamepads=gps.length;
+  const bar=document.getElementById('gpBar');
+  const status=document.getElementById('gpStatus');
+  if(gps.length){
+    bar.textContent='🎮 '+gps.length+' GAMEPAD'+(gps.length>1?'S':'')+' CONNECTED — '+gps.map(g=>g.id.substring(0,20)).join(' | ');
+    bar.classList.add('on');
+    if(status)status.textContent=gps.map(g=>g.id.substring(0,30)).join('\n');
+    setTimeout(()=>bar.classList.remove('on'),3500);
+  } else {
+    bar.classList.remove('on');
+    if(status)status.textContent='لا يوجد ذراع متصل';
+  }
+}
+window.addEventListener('gamepadconnected',e=>{toast('🎮 ذراع متصل: '+e.gamepad.id.substring(0,30));updateGpStatus()});
+window.addEventListener('gamepaddisconnected',e=>{toast('🔌 ذراع منفصل');updateGpStatus()});
+
+/* ════════════ EMULATORJS PATH ════════════ */
+/* ════════════ ROM PATH ════════════ */
+function saveRomsPath(){
+  const v=document.getElementById('romsPathInp').value.trim();
+  romsBasePath=v;
+  localStorage.setItem('av4roms',romsBasePath);
+  toast(romsBasePath?'✅ تم حفظ مسار الروم':'⚠️ تم مسح المسار');
+}
+
+async function pickRomFolder(){
+  if(!('showDirectoryPicker' in window)){
+    toast('⚠️ المتصفح لا يدعم File System API — أدخل المسار يدوياً');
+    return;
+  }
+  try{
+    const dir=await window.showDirectoryPicker();
+    // Build a local blob URL base isn't possible; instead store the dir handle reference
+    // and use file URL from the picked directory
+    const path='local://'+dir.name+'/';
+    document.getElementById('romsPathInp').value=path;
+    romsBasePath=path;
+    localStorage.setItem('av4roms',romsBasePath);
+    // Store directory handle for later use
+    window._romDirHandle=dir;
+    toast('✅ تم اختيار المجلد: '+dir.name);
+  }catch(e){
+    if(e.name!=='AbortError')toast('❌ خطأ في اختيار المجلد');
+  }
+}
+
+async function addGameFromPath(){
+  if(!curSys)return;
+  const nameEl=document.getElementById('pathGameName');
+  const fileEl=document.getElementById('pathGameFile');
+  const name=(nameEl?.value||'').trim();
+  const file=(fileEl?.value||'').trim();
+  if(!name){toast('⚠️ أدخل اسم اللعبة');return}
+  if(!file){toast('⚠️ أدخل اسم الملف');return}
+
+  const ext='.'+file.split('.').pop().toLowerCase();
+  const s=curSys;
+
+  // If we have a dir handle (local folder picked), try to get file from it
+  let data=null;
+  if(window._romDirHandle && romsBasePath.startsWith('local://')){
+    try{
+      const fileHandle=await window._romDirHandle.getFileHandle(file);
+      const f=await fileHandle.getFile();
+      data=await f.arrayBuffer();
+    }catch(e){
+      toast('⚠️ لم يُعثر على الملف في المجلد — سيُحمَّل عند التشغيل');
+    }
+  }
+
+  const basePath=romsBasePath.startsWith('local://')?'':romsBasePath;
+  const filePath=basePath+(basePath.endsWith('/')?'':'/') + file;
+
+  if(games.find(g=>g.name===name&&g.sysId===s.id)){
+    toast('⏭️ اللعبة موجودة مسبقاً');return;
+  }
+
+  const id='p'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+  const meta={id,sysId:s.id,name,ext,size:0,added:Date.now(),lastPlayed:0,hasSave:false,favorite:false,fromPath:true,filePath};
+  const dbRec={...meta,data}; // data may be null if URL-based
+  await dbPut(dbRec);
+  games.unshift(meta);
+
+  nameEl.value='';fileEl.value='';
+  updateStats();renderSysGrid();renderLib();renderModal();
+  toast('✅ أُضيفت: '+name+(data?'':' — سيُحمَّل من المسار'));
+}
+
+function saveEjsPath(){
+  const v=document.getElementById('ejsPathInp').value.trim();
+  if(!v)return toast('⚠️ أدخل مساراً صحيحاً');
+  ejsPath=v.endsWith('/')?v:v+'/';
+  localStorage.setItem('av4ejs',ejsPath);
+  toast('✅ تم حفظ مسار EmulatorJS');
+}
+
+
+function doSearch(q){
+  const ql=q.toLowerCase().trim();
+  if(!ql){showScr('home');return}
+  const res=games.filter(g=>{
+    const s=SYS.find(x=>x.id===g.sysId)||{n:'',f:''};
+    return g.name.toLowerCase().includes(ql)||s.n.toLowerCase().includes(ql)||s.f.toLowerCase().includes(ql);
+  }).sort((a,b)=>b.lastPlayed-a.lastPlayed||b.added-a.added);
+
+  showScr('lib');
+  const el=document.getElementById('libContent');
+  if(!res.length){
+    el.innerHTML='<div class="empty"><span class="empty-ico">🔍</span><div class="empty-t">لا نتائج</div><div class="empty-s">جرب كلمة بحث مختلفة</div></div>';
+    return;
+  }
+  let h='<div style="font-family:var(--fd);font-size:10px;color:var(--muted);margin-bottom:12px;letter-spacing:2px">'+res.length+' نتيجة</div><div class="covers">';
+  res.forEach((g,i)=>{
+    const s=SYS.find(x=>x.id===g.sysId)||{n:'?',ico:'🎮',col:'#8800ff'};
+    h+='<div class="gcard" style="--gc:'+s.col+';animation-delay:'+i*18+'ms" id="gc_'+g.id+'">'
+      +'<div class="gcard-img"><canvas id="cv_'+g.id+'" width="200" height="280"></canvas>'
+      +(g.hasSave?'<div class="save-badge"><div class="save-dot"></div>SAVED</div>':'')
+      +'<div class="gcard-ov"><div class="ov-btns"><button class="ov-play" onclick="launch(\''+g.id+'\')">▶ تشغيل</button><button class="ov-del" onclick="delGame(\''+g.id+'\');event.stopPropagation()">🗑️</button></div></div>'
+      +'</div><div class="gcard-info"><div class="gc-name">'+esc(g.name)+'</div><div class="gc-meta"><span class="gc-sys">'+s.n+'</span><span class="gc-sz">'+fmtSz(g.size)+'</span></div></div></div>';
+  });
+  h+='</div>';
+  el.innerHTML=h;
+  requestAnimationFrame(()=>res.forEach(g=>{
+    const s=SYS.find(x=>x.id===g.sysId)||{ico:'🎮',col:'#8800ff'};
+    const cv=document.getElementById('cv_'+g.id);if(!cv)return;
+    cv.getContext('2d').drawImage(genCover(g.name,s.col,s.ico,200,280),0,0);
+  }));
+}
+
+/* ════════════ UI ════════════ */
+function showScr(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('scr-'+id)?.classList.add('on');
+  document.getElementById('tab-'+id)?.classList.add('on');
+  if(id!=='lib')document.getElementById('searchInput').value='';
+  if(id==='fav')renderFav();
+}
+
+function goHome(){showScr('home')}
+
+function updateStats(){
+  document.getElementById('statGames').textContent=games.length;
+  document.getElementById('libBadge').textContent=games.length;
+  updateFavBadge();
+}
+
+/* ════════════ GITHUB CONFIG ════════════ */
+function saveGhConfig(){
+  ghConfig.owner=(document.getElementById('ghOwner').value||'').trim();
+  ghConfig.repo=(document.getElementById('ghRepo').value||'').trim();
+  ghConfig.branch=(document.getElementById('ghBranch').value||'main').trim();
+  ghConfig.folder=(document.getElementById('ghFolder').value||'').trim().replace(/^\//,'').replace(/\/$/,'');
+  ghConfig.token=(document.getElementById('ghToken').value||'').trim();
+  if(!ghConfig.owner||!ghConfig.repo){toast('⚠️ أدخل اسم المالك والمستودع');return}
+  localStorage.setItem('av5gh',JSON.stringify(ghConfig));
+  setGhStatus('✅ تم الحفظ — '+ghConfig.owner+'/'+ghConfig.repo,'ok');
+  toast('✅ تم حفظ إعدادات GitHub');
+}
+
+function setGhStatus(msg,cls){
+  const el=document.getElementById('ghStatus');if(!el)return;
+  el.textContent=msg;el.className='gh-status'+(cls?' '+cls:'');
+}
+
+function ghProgShow(msg){
+  const p=document.getElementById('ghProg');
+  document.getElementById('ghProgTxt').textContent=msg||'جاري الجلب...';
+  p.classList.add('on');
+}
+function ghProgHide(){document.getElementById('ghProg').classList.remove('on')}
+
+/* ════════════ GITHUB API ════════════ */
+async function fetchGamesFromGitHub(manual=false, silent=false){
+  if(!ghConfig.owner||!ghConfig.repo){
+    if(manual)toast('⚠️ أعدّ إعدادات GitHub أولاً في الإعدادات');
+    return;
+  }
+
+  const btn=document.getElementById('btnGhSync');
+  if(btn)btn.classList.add('loading');
+  if(!silent)ghProgShow('⏳ جاري الاتصال بـ GitHub...');
+  if(manual)setGhStatus('⏳ جاري الجلب...','loading');
+
+  try{
+    const folder=ghConfig.folder?'/'+ghConfig.folder:'';
+    const apiUrl=`https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents${folder}?ref=${ghConfig.branch}`;
+    const headers={'Accept':'application/vnd.github.v3+json','X-GitHub-Api-Version':'2022-11-28'};
+    if(ghConfig.token)headers['Authorization']='token '+ghConfig.token;
+
+    const resp=await fetch(apiUrl,{headers});
+    if(!resp.ok){
+      const err=await resp.json().catch(()=>({}));
+      const msg=err.message||'HTTP '+resp.status;
+      setGhStatus('❌ خطأ: '+msg,'err');
+      if(!silent)toast('❌ GitHub: '+msg);
+      ghProgHide();if(btn)btn.classList.remove('loading');
+      return;
+    }
+
+    const files=await resp.json();
+    if(!Array.isArray(files)){setGhStatus('❌ المسار ليس مجلداً','err');ghProgHide();if(btn)btn.classList.remove('loading');return}
+
+    const romFiles=files.filter(f=>f.type==='file'&&SYS.some(s=>s.exts.includes('.'+f.name.split('.').pop().toLowerCase())));
+
+    if(!romFiles.length){
+      setGhStatus('ℹ️ لا توجد ملفات روم مدعومة في المجلد','');
+      ghProgHide();if(btn)btn.classList.remove('loading');
+      if(manual)toast('ℹ️ لم يُعثر على ملفات روم مدعومة');
+      return;
+    }
+
+    let added=0,skipped=0;
+    if(!silent)ghProgShow(`⏳ جاري إضافة ${romFiles.length} لعبة...`);
+
+    for(const file of romFiles){
+      const ext='.'+file.name.split('.').pop().toLowerCase();
+      const s=SYS.find(x=>x.exts.includes(ext));
+      if(!s)continue;
+      const name=file.name.replace(/\.[^.]+$/,'');
+      // Skip if already in library (same name + system)
+      if(games.find(g=>g.name===name&&g.sysId===s.id)){skipped++;continue}
+
+      // Use GitHub raw URL directly — no download at add time
+      const rawUrl=`https://raw.githubusercontent.com/${ghConfig.owner}/${ghConfig.repo}/${ghConfig.branch}/${ghConfig.folder?ghConfig.folder+'/':''}${file.name}`;
+      const id='gh'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+      const meta={id,sysId:s.id,name,ext,size:file.size||0,added:Date.now(),lastPlayed:0,hasSave:false,favorite:false,fromGitHub:true,fromUrl:false,rawUrl,fromPath:false,filePath:''};
+      await dbPut({...meta,data:null});
+      games.unshift(meta);
+      added++;
+    }
+
+    ghSynced=true;
+    const statusMsg=`✅ ${romFiles.length} ملف في المستودع — أُضيف ${added} | موجود ${skipped}`;
+    setGhStatus(statusMsg,'ok');
+    updateStats();renderSysGrid();renderLib();
+    if(!silent&&added)toast(`☁️ أُضيفت ${added} لعبة من GitHub`);
+    else if(!silent&&!added)toast('ℹ️ جميع الألعاب موجودة مسبقاً');
+
+  }catch(e){
+    setGhStatus('❌ فشل الاتصال: '+e.message,'err');
+    if(!silent)toast('❌ فشل: '+e.message);
+  }
+
+  ghProgHide();
+  if(btn)btn.classList.remove('loading');
+}
+
+async function clearGhGames(){
+  const ghGames=games.filter(g=>g.fromGitHub);
+  if(!ghGames.length){toast('لا توجد ألعاب سحابية');return}
+  if(!confirm(`حذف ${ghGames.length} لعبة من GitHub Cloud؟`))return;
+  for(const g of ghGames){games=games.filter(x=>x.id!==g.id);try{await dbDel(g.id)}catch(e){}}
+  updateStats();renderSysGrid();renderLib();
+  toast(`🗑️ حُذفت ${ghGames.length} لعبة سحابية`);
+  setGhStatus('تم مسح ألعاب Cloud — أعد الجلب متى شئت','');
+}
+
+/* ════════════ ADD BY URL ════════════ */
+function openUrlModal(){
+  document.getElementById('urlGameUrl').value='';
+  document.getElementById('urlGameName').value='';
+  document.getElementById('urlGameSys').value='';
+  document.getElementById('urlModal').classList.add('on');
+}
+function closeUrlModal(){document.getElementById('urlModal').classList.remove('on')}
+
+function autoDetectSysFromUrl(url){
+  if(!url)return;
+  const fname=url.split('/').pop().split('?')[0];
+  const ext='.'+fname.split('.').pop().toLowerCase();
+  const s=SYS.find(x=>x.exts.includes(ext));
+  if(s)document.getElementById('urlGameSys').value=s.id;
+  // Auto-fill name from filename
+  const nameEl=document.getElementById('urlGameName');
+  if(!nameEl.value&&fname.includes('.')){nameEl.value=decodeURIComponent(fname.replace(/\.[^.]+$/,''))}
+}
+
+async function addGameByUrl(){
+  const url=(document.getElementById('urlGameUrl').value||'').trim();
+  const name=(document.getElementById('urlGameName').value||'').trim();
+  const sysId=document.getElementById('urlGameSys').value;
+  if(!url){toast('⚠️ أدخل رابط الروم');return}
+  if(!name){toast('⚠️ أدخل اسم اللعبة');return}
+  if(!sysId){toast('⚠️ اختر النظام');return}
+  const s=SYS.find(x=>x.id===sysId);if(!s)return;
+  if(games.find(g=>g.name===name&&g.sysId===sysId)){toast('⏭️ اللعبة موجودة مسبقاً');return}
+  const ext='.'+url.split('.').pop().split('?')[0].toLowerCase();
+  const id='url'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+  const meta={id,sysId,name,ext,size:0,added:Date.now(),lastPlayed:0,hasSave:false,favorite:false,fromGitHub:false,fromUrl:true,rawUrl:url,fromPath:false,filePath:''};
+  await dbPut({...meta,data:null});
+  games.unshift(meta);
+  closeUrlModal();
+  updateStats();renderSysGrid();renderLib();
+  toast('✅ أُضيفت: '+name+' — سيُحمَّل عند التشغيل');
+}
+
+function renderStgSys(){
+  const el=document.getElementById('settingsSys');
+  SYS.forEach(s=>{
+    const d=document.createElement('div');d.className='stg-item';d.style.cursor='default';
+    d.innerHTML='<div class="si-ico" style="background:'+s.col+'22;border-color:'+s.col+'">'+s.ico+'</div><div class="si-inf"><div class="si-t">'+s.f+'</div><div class="si-d">'+s.exts.join(', ')+'</div></div><span style="font-size:9px;color:'+s.col+';font-family:var(--fd)">'+s.yr+'</span>';
+    el.appendChild(d);
+  });
+}
+</script>
+</body>
+</html>
