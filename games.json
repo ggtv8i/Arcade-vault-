@@ -1,0 +1,93 @@
+{
+  "_info": {
+    "version": "1.0",
+    "description": "ARCADE VAULT — قائمة الألعاب السحابية. أضف ألعابك هنا ثم ضع الملفات في مجلد roms/",
+    "last_updated": "2025-01-01"
+  },
+
+  "settings": {
+    "site_title": "ARCADE VAULT",
+    "site_subtitle": "منصة الألعاب الكلاسيكية السحابية",
+    "accent_color": "#8800ff",
+    "show_fps_warning": true,
+    "emulatorjs_cdn": "https://cdn.emulatorjs.org/stable/data/",
+    "roms_folder": "roms"
+  },
+
+  "games": [
+
+    {
+      "id": "demo-nes-001",
+      "title": "Alter Ego",
+      "system": "nes",
+      "file": "alter-ego.nes",
+      "year": 2010,
+      "genre": "Platform",
+      "players": 1,
+      "description": "لعبة NES مجانية المصدر — مثال توضيحي",
+      "cover": "",
+      "featured": true,
+      "tags": ["free", "homebrew"]
+    },
+
+    {
+      "id": "demo-gba-001",
+      "title": "Anguna",
+      "system": "gba",
+      "file": "anguna.gba",
+      "year": 2008,
+      "genre": "Action RPG",
+      "players": 1,
+      "description": "لعبة GBA مجانية — Action RPG كلاسيكية",
+      "cover": "",
+      "featured": true,
+      "tags": ["free", "homebrew"]
+    },
+
+    {
+      "id": "demo-snes-001",
+      "title": "Super Road Blaster",
+      "system": "snes",
+      "file": "super-road-blaster.smc",
+      "year": 2018,
+      "genre": "Racing",
+      "players": 1,
+      "description": "لعبة SNES مجانية المصدر",
+      "cover": "",
+      "featured": false,
+      "tags": ["free", "homebrew"]
+    }
+
+  ],
+
+  "_instructions": {
+    "how_to_add_game": [
+      "1. أضف كائن جديد في مصفوفة games",
+      "2. id: معرف فريد (بدون مسافات)",
+      "3. title: اسم اللعبة",
+      "4. system: nes/snes/n64/gba/gb/gbc/nds/psx/psp/md/sms/gg/fbneo/mame/a2600/dos",
+      "5. file: اسم الملف داخل مجلد roms/ مثال: sonic.md",
+      "6. cover: رابط صورة الغلاف (اختياري — يُجلب تلقائياً من Libretro)",
+      "7. ضع ملف الروم في مجلد roms/",
+      "8. ارفع التغييرات على GitHub"
+    ],
+    "systems_reference": {
+      "nes":    { "core": "nes",     "exts": [".nes"] },
+      "snes":   { "core": "snes",    "exts": [".smc",".sfc",".zip"] },
+      "n64":    { "core": "n64",     "exts": [".n64",".z64",".v64"] },
+      "gb":     { "core": "gb",      "exts": [".gb"] },
+      "gbc":    { "core": "gbc",     "exts": [".gbc"] },
+      "gba":    { "core": "gba",     "exts": [".gba"] },
+      "nds":    { "core": "nds",     "exts": [".nds"] },
+      "md":     { "core": "segaMD",  "exts": [".md",".gen",".smd",".bin"] },
+      "sms":    { "core": "segaMS",  "exts": [".sms"] },
+      "gg":     { "core": "segaGG",  "exts": [".gg"] },
+      "psx":    { "core": "psx",     "exts": [".bin",".cue",".pbp"] },
+      "psp":    { "core": "ppsspp",  "exts": [".iso",".cso",".pbp"] },
+      "fbneo":  { "core": "fbneo",   "exts": [".zip"] },
+      "mame":   { "core": "mame2003plus", "exts": [".zip"] },
+      "a2600":  { "core": "atari2600", "exts": [".a26",".bin"] },
+      "dos":    { "core": "dosbox",  "exts": [".zip",".exe"] }
+    }
+  }
+}
