@@ -29,7 +29,19 @@
       "featured": true,
       "tags": ["free", "homebrew"]
     },
-
+{
+  "id": "Mario Kart 64 (USA).z64",
+  "title": "Super Mario Bros",
+  "system": "N64",
+  "file": "Mario Kart 64 (USA).z64",
+  "year": 1985,
+  "genre": "Platform",
+  "players": 1,
+  "description": "أشهر لعبة نينتندو في التاريخ",
+  "cover": "",
+  "featured": true,
+  "tags": []
+}
     {
       "id": "demo-gba-001",
       "title": "Anguna",
