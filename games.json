@@ -1,10 +1,9 @@
 {
   "_info": {
-    "version": "1.0",
-    "description": "ARCADE VAULT — قائمة الألعاب السحابية. أضف ألعابك هنا ثم ضع الملفات في مجلد roms/",
-    "last_updated": "2025-01-01"
+    "version": "2.0",
+    "description": "ARCADE VAULT — Expanded popular games pack",
+    "last_updated": "2026-03-15"
   },
-
   "settings": {
     "site_title": "ARCADE VAULT",
     "site_subtitle": "منصة الألعاب الكلاسيكية السحابية",
@@ -13,81 +12,501 @@
     "emulatorjs_cdn": "https://cdn.emulatorjs.org/stable/data/",
     "roms_folder": "roms"
   },
-
   "games": [
-
     {
-      "id": "demo-nes-001",
-      "title": "Alter Ego",
+      "id": "super-mario-bros",
+      "title": "Super Mario Bros",
       "system": "nes",
-      "file": "alter-ego.nes",
-      "year": 2010,
+      "file": "super-mario.nes",
+      "year": 1985,
       "genre": "Platform",
       "players": 1,
-      "description": "لعبة NES مجانية المصدر — مثال توضيحي",
+      "description": "Classic popular game",
       "cover": "",
       "featured": true,
-      "tags": ["free", "homebrew"]
+      "tags": [
+        "classic"
+      ]
     },
-
     {
-      "id": "demo-gba-001",
-      "title": "Anguna",
+      "id": "contra",
+      "title": "Contra",
+      "system": "nes",
+      "file": "contra.nes",
+      "year": 1987,
+      "genre": "Action",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "zelda",
+      "title": "Legend of Zelda",
+      "system": "nes",
+      "file": "zelda.nes",
+      "year": 1986,
+      "genre": "Adventure",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "megaman2",
+      "title": "Mega Man 2",
+      "system": "nes",
+      "file": "megaman2.nes",
+      "year": 1988,
+      "genre": "Action",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "tetris-nes",
+      "title": "Tetris",
+      "system": "nes",
+      "file": "tetris.nes",
+      "year": 1989,
+      "genre": "Puzzle",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "super-mario-world",
+      "title": "Super Mario World",
+      "system": "snes",
+      "file": "marioworld.smc",
+      "year": 1990,
+      "genre": "Platform",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "zelda-snes",
+      "title": "Zelda A Link to the Past",
+      "system": "snes",
+      "file": "zelda.smc",
+      "year": 1991,
+      "genre": "Adventure",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "streetfighter2",
+      "title": "Street Fighter II",
+      "system": "snes",
+      "file": "sf2.smc",
+      "year": 1991,
+      "genre": "Fighting",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "donkeykong",
+      "title": "Donkey Kong Country",
+      "system": "snes",
+      "file": "dkc.smc",
+      "year": 1994,
+      "genre": "Platform",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "pokemon-fire-red",
+      "title": "Pokemon Fire Red",
       "system": "gba",
-      "file": "anguna.gba",
-      "year": 2008,
+      "file": "firered.gba",
+      "year": 2004,
+      "genre": "RPG",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "pokemon-emerald",
+      "title": "Pokemon Emerald",
+      "system": "gba",
+      "file": "emerald.gba",
+      "year": 2005,
+      "genre": "RPG",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "dbz-gba",
+      "title": "DBZ Legacy of Goku",
+      "system": "gba",
+      "file": "dbz.gba",
+      "year": 2002,
       "genre": "Action RPG",
       "players": 1,
-      "description": "لعبة GBA مجانية — Action RPG كلاسيكية",
+      "description": "Classic popular game",
       "cover": "",
       "featured": true,
-      "tags": ["free", "homebrew"]
+      "tags": [
+        "classic"
+      ]
     },
-
     {
-      "id": "demo-snes-001",
-      "title": "Super Road Blaster",
-      "system": "snes",
-      "file": "super-road-blaster.smc",
-      "year": 2018,
+      "id": "metroid-gba",
+      "title": "Metroid Fusion",
+      "system": "gba",
+      "file": "metroid.gba",
+      "year": 2002,
+      "genre": "Action",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "pokemon-diamond",
+      "title": "Pokemon Diamond",
+      "system": "nds",
+      "file": "diamond.nds",
+      "year": 2006,
+      "genre": "RPG",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "mario-kart-ds",
+      "title": "Mario Kart DS",
+      "system": "nds",
+      "file": "mkds.nds",
+      "year": 2005,
       "genre": "Racing",
       "players": 1,
-      "description": "لعبة SNES مجانية المصدر",
+      "description": "Classic popular game",
       "cover": "",
-      "featured": false,
-      "tags": ["free", "homebrew"]
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "new-super-mario",
+      "title": "New Super Mario Bros",
+      "system": "nds",
+      "file": "nsmb.nds",
+      "year": 2006,
+      "genre": "Platform",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "tekken3",
+      "title": "Tekken 3",
+      "system": "psx",
+      "file": "tekken3.bin",
+      "year": 1997,
+      "genre": "Fighting",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "crash",
+      "title": "Crash Bandicoot",
+      "system": "psx",
+      "file": "crash.bin",
+      "year": 1996,
+      "genre": "Platform",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "resident-evil",
+      "title": "Resident Evil",
+      "system": "psx",
+      "file": "re.bin",
+      "year": 1996,
+      "genre": "Horror",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "ff7",
+      "title": "Final Fantasy VII",
+      "system": "psx",
+      "file": "ff7.bin",
+      "year": 1997,
+      "genre": "RPG",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "gow-psp",
+      "title": "God of War Chains of Olympus",
+      "system": "psp",
+      "file": "gow.iso",
+      "year": 2008,
+      "genre": "Action",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "gta-psp",
+      "title": "GTA Vice City Stories",
+      "system": "psp",
+      "file": "gta.iso",
+      "year": 2006,
+      "genre": "Action",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "naruto-psp",
+      "title": "Naruto Ultimate Ninja",
+      "system": "psp",
+      "file": "naruto.iso",
+      "year": 2007,
+      "genre": "Fighting",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "sonic-md",
+      "title": "Sonic the Hedgehog",
+      "system": "md",
+      "file": "sonic.md",
+      "year": 1991,
+      "genre": "Platform",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "streets-md",
+      "title": "Streets of Rage",
+      "system": "md",
+      "file": "sor.md",
+      "year": 1991,
+      "genre": "Action",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "mortal-md",
+      "title": "Mortal Kombat",
+      "system": "md",
+      "file": "mk.md",
+      "year": 1992,
+      "genre": "Fighting",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "metal-slug",
+      "title": "Metal Slug",
+      "system": "fbneo",
+      "file": "mslug.zip",
+      "year": 1996,
+      "genre": "Action",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "kof98",
+      "title": "King of Fighters 98",
+      "system": "fbneo",
+      "file": "kof98.zip",
+      "year": 1998,
+      "genre": "Fighting",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "pacman",
+      "title": "Pac-Man",
+      "system": "mame",
+      "file": "pacman.zip",
+      "year": 1980,
+      "genre": "Arcade",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "pitfall",
+      "title": "Pitfall",
+      "system": "a2600",
+      "file": "pitfall.a26",
+      "year": 1982,
+      "genre": "Platform",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "space-invaders",
+      "title": "Space Invaders",
+      "system": "a2600",
+      "file": "space.a26",
+      "year": 1980,
+      "genre": "Arcade",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "doom",
+      "title": "DOOM",
+      "system": "dos",
+      "file": "doom.zip",
+      "year": 1993,
+      "genre": "FPS",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
+    },
+    {
+      "id": "prince",
+      "title": "Prince of Persia",
+      "system": "dos",
+      "file": "prince.zip",
+      "year": 1989,
+      "genre": "Adventure",
+      "players": 1,
+      "description": "Classic popular game",
+      "cover": "",
+      "featured": true,
+      "tags": [
+        "classic"
+      ]
     }
-
-  ],
-
-  "_instructions": {
-    "how_to_add_game": [
-      "1. أضف كائن جديد في مصفوفة games",
-      "2. id: معرف فريد (بدون مسافات)",
-      "3. title: اسم اللعبة",
-      "4. system: nes/snes/n64/gba/gb/gbc/nds/psx/psp/md/sms/gg/fbneo/mame/a2600/dos",
-      "5. file: اسم الملف داخل مجلد roms/ مثال: sonic.md",
-      "6. cover: رابط صورة الغلاف (اختياري — يُجلب تلقائياً من Libretro)",
-      "7. ضع ملف الروم في مجلد roms/",
-      "8. ارفع التغييرات على GitHub"
-    ],
-    "systems_reference": {
-      "nes":    { "core": "nes",     "exts": [".nes"] },
-      "snes":   { "core": "snes",    "exts": [".smc",".sfc",".zip"] },
-      "n64":    { "core": "n64",     "exts": [".n64",".z64",".v64"] },
-      "gb":     { "core": "gb",      "exts": [".gb"] },
-      "gbc":    { "core": "gbc",     "exts": [".gbc"] },
-      "gba":    { "core": "gba",     "exts": [".gba"] },
-      "nds":    { "core": "nds",     "exts": [".nds"] },
-      "md":     { "core": "segaMD",  "exts": [".md",".gen",".smd",".bin"] },
-      "sms":    { "core": "segaMS",  "exts": [".sms"] },
-      "gg":     { "core": "segaGG",  "exts": [".gg"] },
-      "psx":    { "core": "psx",     "exts": [".bin",".cue",".pbp"] },
-      "psp":    { "core": "ppsspp",  "exts": [".iso",".cso",".pbp"] },
-      "fbneo":  { "core": "fbneo",   "exts": [".zip"] },
-      "mame":   { "core": "mame2003plus", "exts": [".zip"] },
-      "a2600":  { "core": "atari2600", "exts": [".a26",".bin"] },
-      "dos":    { "core": "dosbox",  "exts": [".zip",".exe"] }
-    }
-  }
+  ]
 }
