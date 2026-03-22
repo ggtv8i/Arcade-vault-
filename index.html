@@ -1,0 +1,1985 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="void" data-sys-theme="default">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="theme-color" id="meta-color" content="#050508">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="description" content="ARCADE VAULT PRO — منصة الألعاب الكلاسيكية الاحترافية">
+<title>🕹️ ARCADE VAULT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Noto+Kufi+Arabic:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<script>
+/* ── PWA Manifest ── */
+(()=>{const m={name:'ARCADE VAULT',short_name:'ArcadeVault',display:'standalone',start_url:'./',background_color:'#050508',theme_color:'#050508',orientation:'any',icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23050508'/><text y='.9em' font-size='72' x='14'>🕹️</text></svg>",sizes:'any',type:'image/svg+xml'}]};const l=document.createElement('link');l.rel='manifest';l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/manifest+json'}));document.head.appendChild(l);})();
+/* ── Service Worker ── */
+if('serviceWorker' in navigator){const sw=`const V='av3',CA=V+'-a',CC=V+'-c';const CH=['cdn.emulatorjs.org','thumbnails.libretro.com','fonts.gstatic.com'];self.addEventListener('install',e=>{e.waitUntil(self.skipWaiting())});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CA&&k!==CC).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url);if(CH.some(h=>u.hostname.includes(h))){e.respondWith(caches.open(CC).then(c=>c.match(e.request).then(r=>{if(r)return r;return fetch(e.request).then(res=>{if(res&&res.status===200)c.put(e.request,res.clone());return res})})));return;}e.respondWith(fetch(e.request).then(res=>{if(res&&res.status===200&&res.type==='basic'){const cl=res.clone();caches.open(CA).then(c=>c.put(e.request,cl))}return res}).catch(()=>caches.match(e.request)));});`;try{navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'})),{scope:'./'}).catch(()=>{})}catch{}}
+</script>
+<style>
+/* ═══════════════════════════════════════════════
+   DESIGN SYSTEM — ARCADE VAULT PRO v3
+   6 Site Themes + Per-System Emulator Skins
+═══════════════════════════════════════════════ */
+:root {
+  /* Site theme tokens (overridden per theme) */
+  --bg:   #050508;  --bg1: #0c0c14;  --bg2: #13131e;
+  --bg3:  #1a1a28;  --bg4: #222234;  --bg5: #2c2c44;
+  --tx0: #ffffff;   --tx1: #c0c8e0;  --tx2: #6878a0;  --tx3: #2a2a40;
+  --a:   #00d4ff;   --a2:  #7c5cfc;  --a3:  #fc5c8c;
+  --ok:  #00ff88;   --warn:#ffd700;  --err: #ff4060;
+  --glow: rgba(0,212,255,.35);
+  --glow2:rgba(124,92,252,.35);
+  --card-bg: rgba(12,12,20,.85);
+  --hdr-bg:  rgba(5,5,8,.94);
+  --border:  rgba(255,255,255,.07);
+  --border2: rgba(0,212,255,.2);
+  --orb: 'Orbitron',monospace;
+  --arab:'Noto Kufi Arabic',system-ui,sans-serif;
+  --r: 12px;
+}
+
+/* ── Site Themes ─────────────────────────────── */
+[data-theme="void"]   { --bg:#050508;--bg1:#0c0c14;--bg2:#13131e;--bg3:#1a1a28;--bg4:#222234;--a:#00d4ff;--a2:#7c5cfc;--a3:#fc5c8c;--glow:rgba(0,212,255,.35);--hdr-bg:rgba(5,5,8,.94); }
+[data-theme="oled"]   { --bg:#000000;--bg1:#090909;--bg2:#111111;--bg3:#1a1a1a;--bg4:#222222;--a:#00e5ff;--a2:#aa00ff;--a3:#ff1744;--glow:rgba(0,229,255,.35);--hdr-bg:rgba(0,0,0,.98); }
+[data-theme="cyber"]  { --bg:#020a05;--bg1:#061208;--bg2:#0c1e0e;--bg3:#122815;--bg4:#1a3620;--a:#00ff88;--a2:#00ccff;--a3:#ffcc00;--glow:rgba(0,255,136,.35);--hdr-bg:rgba(2,10,5,.96); }
+[data-theme="sunset"] { --bg:#0a0408;--bg1:#160810;--bg2:#220e18;--bg3:#2e1420;--bg4:#3a1a2c;--a:#ff6b9d;--a2:#ff9a3c;--a3:#ffd700;--glow:rgba(255,107,157,.35);--hdr-bg:rgba(10,4,8,.96); }
+[data-theme="ocean"]  { --bg:#020810;--bg1:#050f1c;--bg2:#081828;--bg3:#0c2236;--bg4:#102c44;--a:#40e0ff;--a2:#0066ff;--a3:#00ffcc;--glow:rgba(64,224,255,.35);--hdr-bg:rgba(2,8,16,.96); }
+[data-theme="light"]  { --bg:#f0f0f8;--bg1:#e8e8f4;--bg2:#e0e0ee;--bg3:#d8d8e8;--bg4:#d0d0e0;--tx0:#080820;--tx1:#282848;--tx2:#5858a0;--tx3:#c0c0d8;--a:#0066cc;--a2:#5533cc;--a3:#cc0066;--glow:rgba(0,102,204,.3);--card-bg:rgba(240,240,250,.9);--hdr-bg:rgba(240,240,248,.96);--border:rgba(0,0,0,.08);--border2:rgba(0,102,204,.25); }
+
+/* ── System Emulator Skins ── applied to #emu-wrap when playing */
+/* NES */
+[data-sys-theme="nes"]    { --emu-bg:#1a0000;--emu-bar:#2a0000;--emu-acc:#ff2200;--emu-glow:rgba(255,34,0,.5);--emu-btn-bg:rgba(255,34,0,.15);--emu-border:rgba(255,34,0,.3); }
+/* SNES */
+[data-sys-theme="snes"]   { --emu-bg:#0d0020;--emu-bar:#1a0030;--emu-acc:#aa44ff;--emu-glow:rgba(170,68,255,.5);--emu-btn-bg:rgba(170,68,255,.15);--emu-border:rgba(170,68,255,.3); }
+/* N64 */
+[data-sys-theme="n64"]    { --emu-bg:#000a20;--emu-bar:#001030;--emu-acc:#0088ff;--emu-glow:rgba(0,136,255,.5);--emu-btn-bg:rgba(0,136,255,.15);--emu-border:rgba(0,136,255,.3); }
+/* Game Boy */
+[data-sys-theme="gb"]     { --emu-bg:#0a0e00;--emu-bar:#141e00;--emu-acc:#88cc00;--emu-glow:rgba(136,204,0,.5);--emu-btn-bg:rgba(136,204,0,.15);--emu-border:rgba(136,204,0,.3); }
+/* GBA */
+[data-sys-theme="gba"]    { --emu-bg:#0e0020;--emu-bar:#1c003a;--emu-acc:#cc66ff;--emu-glow:rgba(204,102,255,.5);--emu-btn-bg:rgba(204,102,255,.15);--emu-border:rgba(204,102,255,.3); }
+/* Mega Drive / Sega */
+[data-sys-theme="sega"]   { --emu-bg:#000a18;--emu-bar:#001022;--emu-acc:#2266cc;--emu-glow:rgba(34,102,204,.5);--emu-btn-bg:rgba(34,102,204,.15);--emu-border:rgba(34,102,204,.3); }
+/* PlayStation */
+[data-sys-theme="ps"]     { --emu-bg:#000818;--emu-bar:#001028;--emu-acc:#0044cc;--emu-glow:rgba(0,68,204,.5);--emu-btn-bg:rgba(0,68,204,.15);--emu-border:rgba(0,68,204,.3); }
+/* PSP */
+[data-sys-theme="psp"]    { --emu-bg:#000a14;--emu-bar:#001020;--emu-acc:#0055bb;--emu-glow:rgba(0,85,187,.5);--emu-btn-bg:rgba(0,85,187,.15);--emu-border:rgba(0,85,187,.3); }
+/* Dreamcast */
+[data-sys-theme="dc"]     { --emu-bg:#100800;--emu-bar:#1a1000;--emu-acc:#ff8800;--emu-glow:rgba(255,136,0,.5);--emu-btn-bg:rgba(255,136,0,.15);--emu-border:rgba(255,136,0,.3); }
+/* Arcade */
+[data-sys-theme="arcade"] { --emu-bg:#100010;--emu-bar:#200020;--emu-acc:#ffdd00;--emu-glow:rgba(255,221,0,.5);--emu-btn-bg:rgba(255,221,0,.15);--emu-border:rgba(255,221,0,.3); }
+/* DOS */
+[data-sys-theme="dos"]    { --emu-bg:#000800;--emu-bar:#001000;--emu-acc:#00cc44;--emu-glow:rgba(0,204,68,.5);--emu-btn-bg:rgba(0,204,68,.15);--emu-border:rgba(0,204,68,.3); }
+/* Atari */
+[data-sys-theme="atari"]  { --emu-bg:#140600;--emu-bar:#200c00;--emu-acc:#ff6600;--emu-glow:rgba(255,102,0,.5);--emu-btn-bg:rgba(255,102,0,.15);--emu-border:rgba(255,102,0,.3); }
+/* Default */
+[data-sys-theme="default"]{ --emu-bg:#040408;--emu-bar:#080810;--emu-acc:#00d4ff;--emu-glow:rgba(0,212,255,.5);--emu-btn-bg:rgba(0,212,255,.15);--emu-border:rgba(0,212,255,.3); }
+
+/* ── Reset ─────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow-x:hidden}
+body{background:var(--bg);color:var(--tx0);font-family:var(--arab);font-size:14px;transition:background .35s,color .35s}
+button{cursor:pointer;font-family:inherit;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;color:var(--tx0);background:none;border:none;outline:none}
+img{display:block;max-width:100%}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px}::-webkit-scrollbar-thumb:hover{background:var(--a)}
+
+/* Animated ambient background */
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 65% 45% at 80% 0%,color-mix(in srgb,var(--a) 8%,transparent),transparent 55%),
+             radial-gradient(ellipse 45% 55% at 5% 100%,color-mix(in srgb,var(--a2) 6%,transparent),transparent 50%);
+  transition:background .5s}
+/* Scanlines */
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.012) 2px,rgba(0,0,0,.012) 4px);opacity:.6}
+
+/* ── App shell ─────────────────────────────── */
+#app{position:relative;z-index:1;min-height:100dvh;display:flex;flex-direction:column}
+
+/* ══════════════════════════════════════
+   HEADER
+══════════════════════════════════════ */
+#hdr{
+  position:sticky;top:0;z-index:90;height:54px;
+  background:var(--hdr-bg);backdrop-filter:blur(28px) saturate(1.6);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;padding:0 18px;
+  transition:background .35s;
+}
+#logo{display:flex;align-items:center;gap:9px;cursor:pointer;flex-shrink:0}
+#logo-mark{
+  width:34px;height:34px;border-radius:9px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--a),var(--a2));
+  display:grid;place-items:center;font-size:17px;
+  box-shadow:0 0 18px var(--glow);
+  animation:logoGlow 3s ease infinite;
+  position:relative;overflow:hidden;
+}
+#logo-mark::before{content:'';position:absolute;inset:-60%;background:conic-gradient(transparent,rgba(255,255,255,.12) 90deg,transparent 180deg);animation:logoPrism 2.5s linear infinite}
+@keyframes logoPrism{to{transform:rotate(360deg)}}
+@keyframes logoGlow{0%,100%{box-shadow:0 0 18px var(--glow)}50%{box-shadow:0 0 28px var(--glow2)}}
+#logo-text{display:flex;flex-direction:column;line-height:1}
+#logo-name{font-family:var(--orb);font-size:13px;font-weight:900;letter-spacing:2.5px;
+  background:linear-gradient(90deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+#logo-sub{font-family:var(--orb);font-size:7px;letter-spacing:3.5px;color:var(--tx2);margin-top:1px}
+
+/* Search */
+#srch-wrap{flex:1;max-width:360px;position:relative}
+#srch{width:100%;height:34px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:0 12px 0 34px;font-size:13px;color:var(--tx0);transition:all .2s}
+#srch:focus{border-color:var(--a);background:var(--bg2);box-shadow:0 0 0 3px color-mix(in srgb,var(--a) 12%,transparent)}
+#srch::placeholder{color:var(--tx2)}
+#srch-icon{position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--tx2);font-size:15px;pointer-events:none;transition:color .2s}
+#srch:focus~#srch-icon{color:var(--a)}
+
+#hdr-right{margin-right:auto;display:flex;align-items:center;gap:6px}
+.hb{width:34px;height:34px;border-radius:9px;background:var(--bg3);border:1px solid var(--border);color:var(--tx2);font-size:16px;display:grid;place-items:center;transition:all .2s;position:relative;flex-shrink:0}
+.hb:hover{border-color:var(--a);color:var(--a);background:color-mix(in srgb,var(--a) 10%,transparent);transform:translateY(-1px)}
+.hb.on{border-color:var(--a);color:var(--a);background:color-mix(in srgb,var(--a) 12%,transparent)}
+.hb-badge{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;background:var(--a3);border-radius:8px;padding:0 4px;font-size:9px;font-family:var(--orb);color:#fff;display:none;place-items:center;border:1px solid var(--bg)}
+.hb-badge.v{display:grid}
+.hstat{text-align:center;flex-shrink:0}
+.hstat-n{font-family:var(--orb);font-size:12px;font-weight:900;background:linear-gradient(90deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hstat-l{font-size:8px;color:var(--tx2);letter-spacing:1.5px;font-family:var(--orb)}
+@media(max-width:500px){.hstat{display:none}#logo-sub{display:none}#logo-name{font-size:11px}}
+
+/* ══════════════════════════════════════
+   NAV TABS
+══════════════════════════════════════ */
+#nav{position:sticky;top:54px;z-index:88;height:46px;background:var(--bg1);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;scrollbar-width:none;transition:background .35s}
+#nav::-webkit-scrollbar{display:none}
+.ntab{padding:0 18px;height:100%;font-family:var(--orb);font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--tx2);border-bottom:2px solid transparent;display:flex;align-items:center;gap:6px;transition:all .2s;flex-shrink:0;white-space:nowrap}
+.ntab.on{color:var(--a);border-bottom-color:var(--a)}
+.ntab:hover:not(.on){color:var(--tx1)}
+.nbadge{background:var(--a2);color:#fff;border-radius:20px;padding:1px 6px;font-size:9px}
+
+/* ══════════════════════════════════════
+   SCREENS
+══════════════════════════════════════ */
+.scr{display:none;padding:22px 18px 90px;max-width:1500px;margin:0 auto;width:100%}
+.scr.on{display:block;animation:scrIn .22s ease}
+@keyframes scrIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* Section head */
+.sh{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.sh-label{font-family:var(--orb);font-size:9px;font-weight:700;letter-spacing:3px;color:var(--tx2);text-transform:uppercase;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.sh-label::before{content:'';width:3px;height:12px;background:var(--a);border-radius:2px;flex-shrink:0}
+.sh-line{flex:1;height:1px;background:linear-gradient(90deg,var(--border2),transparent)}
+.sh-n{font-family:var(--orb);font-size:10px;color:var(--tx2)}
+
+/* Filter pills */
+.pills{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding-bottom:3px;margin-bottom:16px}
+.pills::-webkit-scrollbar{display:none}
+.pill{padding:5px 14px;border-radius:20px;font-size:11px;border:1px solid var(--border);color:var(--tx2);white-space:nowrap;transition:all .18s;flex-shrink:0;font-family:var(--arab)}
+.pill.on,.pill:hover{border-color:var(--a);color:var(--a);background:color-mix(in srgb,var(--a) 10%,transparent)}
+
+/* ══════════════════════════════════════
+   HERO BANNER
+══════════════════════════════════════ */
+.hero{border-radius:18px;padding:36px 28px 32px;margin-bottom:28px;background:linear-gradient(135deg,var(--bg2) 0%,var(--bg3) 60%,color-mix(in srgb,var(--a) 8%,var(--bg3)) 100%);border:1px solid var(--border2);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-40%;right:-10%;width:55%;height:180%;border-radius:50%;background:radial-gradient(ellipse,color-mix(in srgb,var(--a) 7%,transparent),transparent 70%);animation:heroPulse 7s ease infinite}
+.hero::after{content:'';position:absolute;bottom:-30%;left:-5%;width:40%;height:140%;border-radius:50%;background:radial-gradient(ellipse,color-mix(in srgb,var(--a2) 5%,transparent),transparent 70%)}
+@keyframes heroPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.hero-tag{font-family:var(--orb);font-size:8px;letter-spacing:4px;color:var(--a);background:color-mix(in srgb,var(--a) 10%,transparent);border:1px solid color-mix(in srgb,var(--a) 28%,transparent);display:inline-block;padding:4px 14px;border-radius:20px;margin-bottom:14px;position:relative;z-index:1}
+.hero-h{font-family:var(--orb);font-size:clamp(28px,6vw,60px);font-weight:900;line-height:1;letter-spacing:1px;margin-bottom:10px;position:relative;z-index:1}
+.hero-h span{background:linear-gradient(135deg,var(--a),var(--a2),var(--a3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:14px;color:var(--tx1);max-width:500px;line-height:1.7;margin-bottom:22px;position:relative;z-index:1}
+.hero-stats{display:flex;gap:28px;flex-wrap:wrap;position:relative;z-index:1}
+.hs-big{display:flex;flex-direction:column;gap:2px}
+.hs-big-n{font-family:var(--orb);font-size:30px;font-weight:900;line-height:1}
+.hs-big-n.c1{color:var(--a);text-shadow:0 0 20px var(--glow)}
+.hs-big-n.c2{color:var(--a2);text-shadow:0 0 20px var(--glow2)}
+.hs-big-n.c3{color:var(--warn);text-shadow:0 0 20px rgba(255,215,0,.4)}
+.hs-big-l{font-size:8px;color:var(--tx2);letter-spacing:3px;font-family:var(--orb)}
+
+/* ══════════════════════════════════════
+   FEATURED ROW
+══════════════════════════════════════ */
+.feat-row{display:flex;gap:13px;overflow-x:auto;scrollbar-width:none;padding-bottom:6px;margin-bottom:26px}
+.feat-row::-webkit-scrollbar{display:none}
+.feat-card{--fc:var(--a);flex-shrink:0;width:290px;height:168px;border-radius:15px;overflow:hidden;cursor:pointer;position:relative;border:1px solid color-mix(in srgb,var(--fc) 30%,transparent);transition:all .28s cubic-bezier(.34,1.4,.64,1)}
+.feat-card:hover{transform:translateY(-5px) scale(1.02);box-shadow:0 16px 48px rgba(0,0,0,.6),0 0 22px color-mix(in srgb,var(--fc) 30%,transparent)}
+.feat-bg{position:absolute;inset:0;background:linear-gradient(135deg,color-mix(in srgb,var(--fc) 22%,#000),color-mix(in srgb,var(--fc) 8%,#111))}
+.feat-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.6;transition:transform .35s}
+.feat-card:hover .feat-art{transform:scale(1.06)}
+.feat-ov{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,.7),rgba(0,0,0,.25));display:flex;flex-direction:column;justify-content:flex-end;padding:15px}
+.feat-sys{font-family:var(--orb);font-size:8px;letter-spacing:2px;color:rgba(255,255,255,.55);margin-bottom:4px}
+.feat-title{font-family:var(--orb);font-size:16px;font-weight:900;color:#fff;line-height:1.2;margin-bottom:9px}
+.feat-play{display:inline-flex;align-items:center;gap:6px;background:var(--fc);color:#000;font-family:var(--orb);font-size:9px;font-weight:700;letter-spacing:1.5px;padding:6px 15px;border-radius:8px;transition:all .18s}
+.feat-card:hover .feat-play{transform:scale(1.06);box-shadow:0 4px 16px color-mix(in srgb,var(--fc) 50%,transparent)}
+
+/* ══════════════════════════════════════
+   GAME GRID & CARDS
+══════════════════════════════════════ */
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+@media(min-width:900px){.ggrid{grid-template-columns:repeat(auto-fill,minmax(178px,1fr))}}
+@media(max-width:390px){.ggrid{grid-template-columns:repeat(2,1fr);gap:9px}}
+
+.gcard{--gc:var(--a);border-radius:var(--r);overflow:hidden;cursor:pointer;background:var(--card-bg);border:1px solid var(--border);backdrop-filter:blur(6px);transition:transform .24s cubic-bezier(.34,1.5,.64,1),border-color .18s,box-shadow .24s;position:relative;animation:gCardIn .35s ease both}
+@keyframes gCardIn{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:none}}
+.gcard:hover{transform:translateY(-7px) scale(1.025);border-color:var(--gc);box-shadow:0 18px 56px rgba(0,0,0,.55),0 0 24px color-mix(in srgb,var(--gc) 22%,transparent)}
+.gcard:active{transform:scale(.96)!important}
+
+/* Art area */
+.card-art{position:relative;aspect-ratio:3/4;overflow:hidden;background:var(--bg3)}
+.card-art canvas{width:100%;height:100%;display:block;transition:transform .38s}
+.card-art img.ra{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .32s,transform .38s}
+.card-art img.ra.ok{opacity:1}
+.gcard:hover .card-art canvas,.gcard:hover .card-art img.ra{transform:scale(1.07)}
+
+/* Shimmer */
+.card-art::before{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(105deg,transparent 42%,rgba(255,255,255,.07) 50%,transparent 58%);opacity:0;transform:translateX(-100%)}
+.gcard:hover .card-art::before{opacity:1;animation:shimmer .75s ease;transition:none}
+@keyframes shimmer{to{transform:translateX(100%)}}
+
+/* Hover overlay */
+.card-ov{position:absolute;inset:0;z-index:4;background:linear-gradient(0deg,rgba(0,0,0,.92) 0%,rgba(0,0,0,.48) 42%,transparent 70%);opacity:0;transition:opacity .18s;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:12px}
+.gcard:hover .card-ov{opacity:1}
+.card-ov-btn{width:50px;height:50px;border-radius:50%;background:var(--gc);border:3px solid rgba(255,255,255,.28);display:grid;place-items:center;font-size:20px;margin-bottom:8px;box-shadow:0 6px 22px color-mix(in srgb,var(--gc) 45%,transparent);transform:scale(.82);transition:transform .2s}
+.gcard:hover .card-ov-btn{transform:scale(1)}
+.card-ov-label{font-family:var(--orb);font-size:9px;letter-spacing:2px;color:#fff}
+
+/* Badges on card */
+.card-sys-tag{position:absolute;top:7px;left:7px;z-index:5;font-family:var(--orb);font-size:8px;letter-spacing:.8px;padding:2px 7px;border-radius:5px;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);border:1px solid color-mix(in srgb,var(--gc) 45%,transparent);color:var(--gc);font-weight:600}
+.card-fav{position:absolute;top:7px;right:7px;z-index:5;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.72);backdrop-filter:blur(5px);border:1px solid rgba(255,255,255,.14);display:grid;place-items:center;font-size:14px;opacity:0;transition:opacity .15s,transform .15s;transform:scale(.85)}
+.gcard:hover .card-fav,.card-fav.on{opacity:1;transform:scale(1)}
+.card-fav.on{color:var(--a3);border-color:color-mix(in srgb,var(--a3) 40%,transparent);background:color-mix(in srgb,var(--a3) 14%,transparent)}
+.card-played{position:absolute;bottom:7px;left:7px;z-index:5;width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 7px var(--ok);display:none}
+.gcard[data-p="1"] .card-played{display:block}
+
+/* Info */
+.card-info{padding:9px 11px 11px}
+.card-title{font-size:12px;font-weight:700;color:var(--tx0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+.card-sub{display:flex;justify-content:space-between;align-items:center}
+.card-sys{font-family:var(--orb);font-size:9px;color:var(--gc)}
+.card-hs{font-family:var(--orb);font-size:9px;color:var(--warn)}
+.card-sz{font-size:10px;color:var(--tx2)}
+
+/* ══════════════════════════════════════
+   GAME PAGE (detail page)
+══════════════════════════════════════ */
+#game-page{display:none;padding:0 0 80px;max-width:1500px;margin:0 auto;width:100%;animation:scrIn .25s ease}
+#game-page.on{display:block}
+.gp-hero{position:relative;height:280px;overflow:hidden}
+.gp-hero-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(4px) brightness(.5);transform:scale(1.05)}
+.gp-hero-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;filter:blur(3px) brightness(.5)}
+.gp-hero-ov{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,.85),rgba(0,0,0,.4));display:flex;align-items:flex-end;padding:28px}
+.gp-cover-wrap{width:130px;height:178px;border-radius:13px;overflow:hidden;flex-shrink:0;box-shadow:0 20px 56px rgba(0,0,0,.9),0 0 30px var(--glow);border:2px solid var(--border2)}
+.gp-cover-wrap canvas,.gp-cover-wrap img{width:100%;height:100%;display:block;object-fit:cover}
+.gp-header-info{margin-right:22px;flex:1;min-width:0}
+.gp-back{position:absolute;top:16px;left:16px;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:18px;display:grid;place-items:center;cursor:pointer;transition:all .2s;z-index:5}
+.gp-back:hover{background:rgba(255,255,255,.15)}
+.gp-sys-label{font-family:var(--orb);font-size:9px;letter-spacing:2.5px;color:var(--a);margin-bottom:8px;display:flex;align-items:center;gap:7px}
+.gp-title{font-family:var(--orb);font-size:clamp(18px,4vw,30px);font-weight:900;color:#fff;line-height:1.2;margin-bottom:8px}
+.gp-meta-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.gp-tag{font-family:var(--orb);font-size:8px;letter-spacing:1px;padding:3px 10px;border-radius:5px;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6)}
+.gp-tag.sys{border-color:color-mix(in srgb,var(--a) 45%,transparent);color:var(--a);background:color-mix(in srgb,var(--a) 10%,transparent)}
+.gp-play-btn{height:46px;padding:0 28px;border-radius:12px;background:linear-gradient(135deg,var(--a),var(--a2));color:#fff;font-family:var(--orb);font-size:12px;font-weight:700;letter-spacing:2px;display:inline-flex;align-items:center;gap:10px;border:none;transition:all .22s;box-shadow:0 6px 22px var(--glow);cursor:pointer}
+.gp-play-btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px var(--glow)}
+.gp-body{padding:24px 18px}
+.gp-sections{display:grid;grid-template-columns:1fr 300px;gap:24px}
+@media(max-width:700px){.gp-sections{grid-template-columns:1fr}}
+.gp-desc{font-size:14px;color:var(--tx1);line-height:2;margin-bottom:20px}
+.gp-stars-row{display:flex;gap:8px;margin-bottom:18px;align-items:center}
+.gp-star{font-size:24px;cursor:pointer;transition:transform .14s;filter:brightness(.3)}
+.gp-star.on{filter:none;animation:starPop .18s ease}
+.gp-star:hover{transform:scale(1.3);filter:brightness(.7)}
+@keyframes starPop{0%{transform:scale(1.5)}100%{transform:scale(1)}}
+.gp-stats-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:18px}
+.gp-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.gp-stat-item{display:flex;flex-direction:column;gap:3px}
+.gp-stat-n{font-family:var(--orb);font-size:20px;font-weight:900;color:var(--tx0)}
+.gp-stat-l{font-size:10px;color:var(--tx2);letter-spacing:1.5px}
+.gp-actions-col{display:flex;flex-direction:column;gap:11px}
+.btn-play-full{width:100%;height:50px;border-radius:12px;background:linear-gradient(135deg,var(--a),var(--a2));color:#fff;font-family:var(--orb);font-size:12px;font-weight:700;letter-spacing:2px;display:flex;align-items:center;justify-content:center;gap:10px;border:none;transition:all .2s;cursor:pointer;box-shadow:0 6px 22px var(--glow)}
+.btn-play-full:hover{transform:translateY(-2px);box-shadow:0 10px 32px var(--glow)}
+.btn-fav-full{width:100%;height:44px;border-radius:12px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:600;transition:all .2s;cursor:pointer}
+.btn-fav-full:hover{border-color:var(--a3);background:color-mix(in srgb,var(--a3) 10%,transparent);color:var(--a3)}
+.gp-info-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.gp-info-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
+.gp-info-row:last-child{border-bottom:none}
+.gp-info-lbl{font-size:12px;color:var(--tx2)}
+.gp-info-val{font-size:12px;font-weight:600;color:var(--tx0);text-align:left}
+
+/* ══════════════════════════════════════
+   UPLOAD SCREEN
+══════════════════════════════════════ */
+.upload-zone{border:2px dashed var(--border2);border-radius:16px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .24s;background:var(--bg2);position:relative;overflow:hidden;margin-bottom:20px}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--a);background:color-mix(in srgb,var(--a) 6%,var(--bg2));transform:translateY(-2px);box-shadow:0 0 40px color-mix(in srgb,var(--a) 7%,transparent)}
+.uz-ico{font-size:42px;display:block;margin-bottom:11px;animation:float 3s ease infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.uz-title{font-family:var(--orb);font-size:15px;font-weight:700;color:var(--tx0);margin-bottom:5px;letter-spacing:.5px}
+.uz-sub{font-size:12px;color:var(--tx2);margin-bottom:12px;line-height:1.7}
+.uz-badges{display:flex;gap:7px;justify-content:center;flex-wrap:wrap}
+.uz-badge{font-family:var(--orb);font-size:8px;letter-spacing:1.5px;padding:4px 12px;border-radius:20px}
+.uz-badge.rom{color:var(--a);background:color-mix(in srgb,var(--a) 10%,transparent);border:1px solid color-mix(in srgb,var(--a) 28%,transparent)}
+.uz-badge.zip{color:var(--a2);background:color-mix(in srgb,var(--a2) 10%,transparent);border:1px solid color-mix(in srgb,var(--a2) 28%,transparent)}
+.uz-badge.gz{color:var(--ok);background:color-mix(in srgb,var(--ok) 10%,transparent);border:1px solid color-mix(in srgb,var(--ok) 28%,transparent)}
+
+.import-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-bottom:14px;display:none}
+.import-card.on{display:block}
+.import-fn{font-size:11px;color:var(--tx1);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.progress-track{width:100%;height:4px;background:var(--bg4);border-radius:4px;overflow:hidden;margin-bottom:6px}
+.progress-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--a),var(--a2));transition:width .14s}
+.import-meta{display:flex;justify-content:space-between;font-family:var(--orb);font-size:10px;color:var(--tx2)}
+
+/* ══════════════════════════════════════
+   SYSTEMS SCREEN
+══════════════════════════════════════ */
+.sys-cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.sys-card{--sc:var(--a);background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:13px}
+.sys-card:hover{border-color:var(--sc);background:var(--bg3);transform:translateX(-3px)}
+.sys-ico{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;font-size:21px;flex-shrink:0;background:color-mix(in srgb,var(--sc) 13%,transparent);border:1px solid color-mix(in srgb,var(--sc) 28%,transparent)}
+.sys-info{flex:1;min-width:0}
+.sys-name{font-family:var(--orb);font-size:12px;font-weight:700;color:var(--tx0)}
+.sys-full{font-size:11px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.perf-badge{font-family:var(--orb);font-size:9px;padding:2px 7px;border-radius:4px}
+.p1{background:rgba(0,255,136,.1);color:#00ff88;border:1px solid rgba(0,255,136,.22)}
+.p2{background:rgba(255,215,0,.1);color:#ffd700;border:1px solid rgba(255,215,0,.22)}
+.p3{background:rgba(255,120,40,.1);color:#ff7828;border:1px solid rgba(255,120,40,.22)}
+.p4{background:rgba(255,64,96,.1);color:#ff4060;border:1px solid rgba(255,64,96,.22)}
+
+/* ══════════════════════════════════════
+   LEADERBOARD
+══════════════════════════════════════ */
+.lb-row{display:flex;align-items:center;gap:13px;padding:12px 15px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;transition:all .18s;cursor:pointer}
+.lb-row:hover{border-color:var(--a);background:var(--bg3);transform:translateX(-4px)}
+.lb-rank{font-family:var(--orb);font-size:18px;font-weight:900;width:32px;text-align:center;flex-shrink:0}
+.r1{color:var(--warn);text-shadow:0 0 12px rgba(255,215,0,.5)}.r2{color:#c0c0c0}.r3{color:#cd7f32}
+.lb-thumb{width:44px;height:44px;border-radius:8px;overflow:hidden;flex-shrink:0;background:var(--bg4)}
+.lb-thumb canvas,.lb-thumb img{width:100%;height:100%;display:block;object-fit:cover}
+.lb-info{flex:1;min-width:0}
+.lb-name{font-size:13px;font-weight:700;color:var(--tx0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-sys{font-family:var(--orb);font-size:9px;color:var(--tx2);margin-top:2px}
+.lb-score{font-family:var(--orb);font-size:16px;font-weight:900;color:var(--warn);white-space:nowrap}
+
+/* ══════════════════════════════════════
+   ACHIEVEMENTS
+══════════════════════════════════════ */
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:11px}
+.ach-card{display:flex;align-items:center;gap:13px;padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);position:relative;overflow:hidden;transition:all .2s}
+.ach-card.done{border-color:rgba(255,215,0,.3);background:color-mix(in srgb,var(--warn) 4%,var(--bg2))}
+.ach-card.done::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--warn),var(--a2))}
+.ach-icon{width:46px;height:46px;border-radius:11px;display:grid;place-items:center;font-size:22px;flex-shrink:0;background:var(--bg3);border:1px solid var(--border)}
+.ach-card.done .ach-icon{background:color-mix(in srgb,var(--warn) 12%,transparent);border-color:rgba(255,215,0,.3)}
+.ach-name{font-family:var(--orb);font-size:11px;font-weight:700;color:var(--tx0);letter-spacing:.3px}
+.ach-card:not(.done) .ach-name{color:var(--tx2)}
+.ach-desc{font-size:11px;color:var(--tx2);margin-top:2px}
+.ach-ok{font-family:var(--orb);font-size:9px;color:var(--warn);margin-top:3px}
+
+/* ══════════════════════════════════════
+   SETTINGS PANEL
+══════════════════════════════════════ */
+#settings{position:fixed;inset:0;z-index:300;background:var(--bg);transform:translateX(-105%);transition:transform .3s cubic-bezier(.4,0,.2,1);overflow-y:auto;scrollbar-width:none}
+#settings.open{transform:none}
+#settings::-webkit-scrollbar{display:none}
+.stg-bar{position:sticky;top:0;height:54px;background:var(--hdr-bg);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 18px;z-index:1}
+.stg-bar-title{font-family:var(--orb);font-size:11px;letter-spacing:2.5px;color:var(--tx1);flex:1}
+.stg-body{padding:22px 18px 80px;max-width:700px;margin:0 auto}
+.stg-sec{margin-bottom:26px}
+.stg-sec-lbl{font-family:var(--orb);font-size:8px;letter-spacing:3px;color:var(--tx2);text-transform:uppercase;margin-bottom:11px;display:flex;align-items:center;gap:10px}
+.stg-sec-lbl::after{content:'';flex:1;height:1px;background:var(--border)}
+.stg-grp{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.stg-row{display:flex;align-items:center;gap:12px;padding:12px 15px;border-bottom:1px solid var(--border);transition:background .15s}
+.stg-row:last-child{border-bottom:none}
+.stg-row:hover:not([style*="cursor:default"]){background:var(--bg3)}
+.stg-ico{width:36px;height:36px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);display:grid;place-items:center;font-size:17px;flex-shrink:0}
+.stg-inf{flex:1;min-width:0}
+.stg-t{font-size:13px;font-weight:600;color:var(--tx0)}
+.stg-s{font-size:11px;color:var(--tx2);margin-top:1px}
+/* Toggle */
+.tgl{width:40px;height:22px;background:var(--bg4);border-radius:11px;position:relative;cursor:pointer;transition:background .22s;border:1px solid var(--border);flex-shrink:0}
+.tgl.on{background:var(--a);border-color:var(--a)}
+.tgl::after{content:'';position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .22s;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.tgl.on::after{transform:translateX(-18px)}
+/* Input / Select */
+.stg-inp{height:31px;padding:0 10px;border-radius:7px;background:var(--bg3);border:1px solid var(--border);font-size:12px;color:var(--tx0);transition:border-color .18s;width:100%}
+.stg-inp:focus{border-color:var(--a);box-shadow:0 0 0 2px color-mix(in srgb,var(--a) 10%,transparent)}
+.stg-inp::placeholder{color:var(--tx3)}
+.stg-sel{height:31px;padding:0 8px;border-radius:7px;background:var(--bg3);border:1px solid var(--border);font-size:12px;color:var(--tx0);cursor:pointer;min-width:120px;transition:border-color .18s}
+.stg-sel:focus{border-color:var(--a)}
+.stg-sel option{background:var(--bg2);color:var(--tx0)}
+.stg-inp-row{display:flex;gap:6px;padding:0 15px 13px;border-top:1px solid var(--border)}
+.stg-inp-row .stg-inp{flex:1}
+.stg-btn{height:31px;padding:0 14px;border-radius:7px;background:color-mix(in srgb,var(--a) 14%,transparent);border:1px solid color-mix(in srgb,var(--a) 35%,transparent);color:var(--a);font-size:12px;font-weight:600;transition:all .16s;white-space:nowrap;font-family:var(--orb);letter-spacing:.5px;cursor:pointer}
+.stg-btn:hover{background:color-mix(in srgb,var(--a) 24%,transparent)}
+.stg-btn.d{background:color-mix(in srgb,var(--err) 12%,transparent);border-color:color-mix(in srgb,var(--err) 30%,transparent);color:var(--err)}
+/* Theme picker */
+.theme-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:8px;padding:12px 15px}
+.theme-opt{border-radius:9px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:all .18s}
+.theme-opt.on{border-color:var(--a);box-shadow:0 0 14px color-mix(in srgb,var(--a) 28%,transparent)}
+.theme-opt:hover:not(.on){border-color:var(--tx2)}
+.theme-swatch{height:46px;display:flex;align-items:center;justify-content:center;gap:5px}
+.theme-dot{width:13px;height:13px;border-radius:50%}
+.theme-lbl{text-align:center;padding:5px;font-family:var(--orb);font-size:9px;letter-spacing:1px;background:var(--bg3);color:var(--tx2)}
+.theme-opt.on .theme-lbl{color:var(--a)}
+/* Shader picker */
+.shader-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:7px;padding:10px 15px}
+.sh-opt{border-radius:8px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;padding:9px 5px;text-align:center;transition:all .16s}
+.sh-opt .si{font-size:19px;margin-bottom:4px}
+.sh-opt .sl{font-family:var(--orb);font-size:9px;color:var(--tx2);letter-spacing:.8px}
+.sh-opt.on,.sh-opt:hover{border-color:var(--a);background:color-mix(in srgb,var(--a) 10%,transparent)}
+.sh-opt.on .sl{color:var(--a)}
+
+/* ══════════════════════════════════════
+   EMULATOR — PER-SYSTEM THEMED
+══════════════════════════════════════ */
+#emu{position:fixed;inset:0;z-index:500;display:none;flex-direction:column}
+#emu.on{display:flex;animation:emuIn .22s ease}
+@keyframes emuIn{from{opacity:0}to{opacity:1}}
+
+/* The entire emulator bg uses system theme */
+#emu{background:var(--emu-bg,#040408)}
+
+#emu-bar{
+  height:50px;flex-shrink:0;
+  background:var(--emu-bar,#080810);
+  border-bottom:1px solid var(--emu-border,rgba(0,212,255,.2));
+  display:flex;align-items:center;gap:8px;padding:0 12px;
+  transition:background .5s,border-color .5s;
+}
+/* System logo in bar */
+.emu-sys-logo{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:17px;flex-shrink:0;background:color-mix(in srgb,var(--emu-acc,#00d4ff) 15%,transparent);border:1px solid var(--emu-border,rgba(0,212,255,.2));transition:all .5s}
+.emu-back{width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid var(--emu-border,rgba(255,255,255,.1));color:#fff;font-size:18px;display:grid;place-items:center;flex-shrink:0;transition:all .18s;cursor:pointer}
+.emu-back:hover{background:color-mix(in srgb,var(--emu-acc,#00d4ff) 18%,transparent);border-color:var(--emu-acc,#00d4ff)}
+.emu-info{flex:1;min-width:0;text-align:center}
+.emu-t{font-family:var(--orb);font-size:11px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.5px}
+.emu-s{font-size:9px;color:rgba(255,255,255,.35);letter-spacing:2px;font-family:var(--orb)}
+/* Accent line on top of bar */
+#emu-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--emu-acc,#00d4ff),transparent);opacity:.8}
+.emu-as{display:flex;align-items:center;gap:4px;font-family:var(--orb);font-size:9px;color:rgba(255,255,255,.25);flex-shrink:0;transition:color .3s}
+.emu-as.on{color:var(--ok)}
+.as-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.emu-as.on .as-dot{animation:blink .9s ease infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.28}}
+.emu-btns{display:flex;gap:4px}
+.eb{height:30px;padding:0 10px;border-radius:7px;background:var(--emu-btn-bg,rgba(0,212,255,.1));border:1px solid var(--emu-border,rgba(0,212,255,.2));color:#fff;font-size:11px;font-weight:600;transition:all .18s;white-space:nowrap;cursor:pointer}
+.eb:hover{background:color-mix(in srgb,var(--emu-acc,#00d4ff) 24%,transparent);border-color:var(--emu-acc,#00d4ff)}
+.eb.lit{background:rgba(0,255,136,.12);border-color:rgba(0,255,136,.3);color:var(--ok)}
+
+#emu-body{flex:1;position:relative;overflow:hidden}
+/* System-colored glow edges on emulator */
+#emu-body::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:2;box-shadow:inset 0 0 40px color-mix(in srgb,var(--emu-acc,transparent) 6%,transparent);transition:box-shadow .5s}
+#emu-frame{width:100%;height:100%;border:none;display:block}
+
+/* CRT shaders */
+.crt-scan #emu-body::before{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.1),rgba(0,0,0,.1) 1px,transparent 1px,transparent 3px)}
+.crt-crt #emu-frame{filter:brightness(1.07) contrast(1.14) saturate(1.1)}
+.crt-crt #emu-body::before{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;background:radial-gradient(ellipse at center,transparent 65%,rgba(0,0,0,.52) 100%)}
+.crt-crt #emu-body::after{background:repeating-linear-gradient(0deg,rgba(0,0,0,.07),rgba(0,0,0,.07) 1px,transparent 1px,transparent 3px);z-index:4!important}
+.crt-warm #emu-frame{filter:sepia(.32) brightness(.95) contrast(1.07)}
+.crt-neon #emu-frame{filter:brightness(1.15) contrast(1.22) saturate(1.8) hue-rotate(12deg)}
+.crt-pixel #emu-frame{image-rendering:pixelated;filter:contrast(1.18)}
+.crt-gb #emu-frame{filter:sepia(.9) hue-rotate(60deg) brightness(.88) contrast(1.25) saturate(1.4)}
+
+/* Loading screen */
+#emu-load{position:absolute;inset:0;z-index:10;background:var(--emu-bg,#000);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:17px;transition:opacity .42s}
+#emu-load.done{opacity:0;pointer-events:none}
+.load-poster{width:98px;height:136px;border-radius:12px;overflow:hidden;box-shadow:0 22px 62px rgba(0,0,0,.9),0 0 36px var(--emu-glow,rgba(0,212,255,.4));animation:loadFloat 2.2s ease-in-out infinite;transition:box-shadow .5s}
+@keyframes loadFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.load-poster canvas,.load-poster img{width:100%;height:100%;display:block;object-fit:cover}
+.load-title{font-family:var(--orb);font-size:14px;font-weight:900;color:#fff;text-align:center;max-width:250px;letter-spacing:.5px}
+.load-sys-lbl{font-size:9px;color:var(--emu-acc,rgba(255,255,255,.4));letter-spacing:3px;text-align:center;font-family:var(--orb);transition:color .5s}
+.load-st{font-family:var(--orb);font-size:10px;color:var(--emu-acc,#00d4ff);min-height:15px;text-align:center;letter-spacing:.5px;transition:color .5s}
+.load-track{width:188px;height:2px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.load-fill{height:100%;background:linear-gradient(90deg,var(--emu-acc,#00d4ff),color-mix(in srgb,var(--emu-acc,#7c5cfc) 50%,#fff));animation:loadFill 1.9s ease infinite;transition:background .5s}
+@keyframes loadFill{0%{width:0;margin-left:0}50%{width:65%;margin-left:15%}100%{width:0;margin-left:100%}}
+
+/* Error */
+#emu-err{position:absolute;inset:0;z-index:11;background:rgba(0,0,0,.97);display:none;flex-direction:column;align-items:center;justify-content:center;gap:13px;padding:30px}
+#emu-err.on{display:flex}
+.err-h{font-family:var(--orb);font-size:12px;color:var(--err);letter-spacing:1px}
+.err-box{background:rgba(255,64,96,.06);border:1px solid rgba(255,64,96,.18);border-radius:10px;padding:13px 17px;max-width:350px;width:100%}
+.err-box ul{padding-right:14px;font-size:12px;color:#ffaaaa;line-height:2.2}
+.err-back{height:34px;padding:0 20px;border-radius:8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.err-back:hover{background:rgba(255,255,255,.14)}
+
+/* Quick Panel */
+#qp{position:absolute;top:0;right:0;bottom:0;width:260px;background:color-mix(in srgb,var(--emu-bg,#040408) 85%,transparent);backdrop-filter:blur(32px);border-left:1px solid var(--emu-border,rgba(0,212,255,.12));z-index:12;transform:translateX(100%);transition:transform .27s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+#qp.open{transform:none}
+.qp-head{height:48px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;justify-content:space-between;padding:0 14px;flex-shrink:0}
+.qp-ttl{font-family:var(--orb);font-size:9px;letter-spacing:3px;color:rgba(255,255,255,.28)}
+.qp-x{width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.45);font-size:13px;display:grid;place-items:center;transition:all .14s;cursor:pointer}
+.qp-x:hover{color:#fff;border-color:var(--emu-acc,rgba(255,255,255,.28))}
+.qp-body{flex:1;overflow-y:auto;padding:11px 13px;display:flex;flex-direction:column;gap:5px;scrollbar-width:none}
+.qp-body::-webkit-scrollbar{display:none}
+.qp-sec{font-family:var(--orb);font-size:8px;letter-spacing:2px;color:rgba(255,255,255,.2);margin:4px 0 1px}
+.qp-btn{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);cursor:pointer;transition:all .15s;color:#fff;font-size:12px;font-weight:600;width:100%;text-align:right;font-family:var(--arab)}
+.qp-btn:hover{background:var(--emu-btn-bg,rgba(0,212,255,.1));border-color:var(--emu-border,rgba(0,212,255,.2))}
+.qp-btn.danger{color:var(--err)}.qp-btn.danger:hover{background:rgba(255,64,96,.08)}
+.qp-ico{width:30px;height:30px;border-radius:7px;display:grid;place-items:center;font-size:15px;flex-shrink:0}
+.qp-slots{display:flex;gap:4px}
+.qp-slot{flex:1;height:29px;border-radius:6px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);font-family:var(--orb);font-size:9px;color:rgba(255,255,255,.3);transition:all .14s;cursor:pointer}
+.qp-slot.on,.qp-slot:hover{border-color:var(--emu-acc,rgba(0,212,255,.4));color:var(--emu-acc,var(--a));background:var(--emu-btn-bg,rgba(0,212,255,.08))}
+.qp-shaders{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.qp-sh{padding:5px 3px;border-radius:6px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);font-size:10px;color:rgba(255,255,255,.3);text-align:center;cursor:pointer;transition:all .14s}
+.qp-sh.on,.qp-sh:hover{border-color:var(--emu-acc,rgba(0,212,255,.35));color:var(--emu-acc,var(--a));background:var(--emu-btn-bg,rgba(0,212,255,.08))}
+#qp-toggle{position:absolute;top:50%;right:0;transform:translateY(-50%);width:22px;height:50px;background:color-mix(in srgb,var(--emu-acc,#00d4ff) 20%,transparent);border:1px solid var(--emu-border,rgba(0,212,255,.3));border-radius:6px 0 0 6px;display:grid;place-items:center;font-size:10px;color:rgba(255,255,255,.5);cursor:pointer;z-index:13}
+
+/* Score input */
+#score-inp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:color-mix(in srgb,var(--emu-bg,#040408) 95%,transparent);backdrop-filter:blur(20px);border:1px solid var(--emu-border,rgba(0,212,255,.3));border-radius:15px;padding:22px;z-index:15;display:none;min-width:250px;text-align:center}
+#score-v{width:100%;height:42px;border-radius:9px;background:rgba(255,255,255,.07);border:1px solid var(--emu-border,rgba(0,212,255,.25));color:#fff;font-family:var(--orb);font-size:20px;text-align:center;margin-bottom:11px;padding:0}
+.score-submit{width:100%;height:36px;border-radius:9px;background:var(--emu-acc,#00d4ff);color:#000;font-family:var(--orb);font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;border:none;margin-bottom:6px}
+
+/* On-screen gamepad */
+#gp-ui{position:absolute;bottom:0;left:0;right:0;z-index:5;pointer-events:none;display:none;padding:6px 10px 10px;background:linear-gradient(transparent,rgba(0,0,0,.42))}
+#gp-ui.on{display:flex;align-items:flex-end;justify-content:space-between}
+.gpd{display:grid;grid-template-columns:repeat(3,42px);grid-template-rows:repeat(3,42px);gap:2px;pointer-events:all}
+.gpd-btn{width:42px;height:42px;border-radius:8px;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.1);color:#fff;font-size:15px;display:grid;place-items:center;cursor:pointer;user-select:none;touch-action:manipulation}
+.gpd-btn:active,.gpd-btn.p{background:color-mix(in srgb,var(--emu-acc,#00d4ff) 28%,transparent);border-color:var(--emu-acc,rgba(255,255,255,.3))}
+.gp-center{display:flex;flex-direction:column;align-items:center;gap:7px;pointer-events:all}
+.gp-mrow{display:flex;gap:9px}
+.gp-mid{padding:5px 11px;border-radius:18px;background:rgba(0,0,0,.72);border:1px solid rgba(255,255,255,.1);color:#fff;font-family:var(--orb);font-size:8px;cursor:pointer;touch-action:manipulation;letter-spacing:1px}
+.gp-mid:active{background:color-mix(in srgb,var(--emu-acc,#00d4ff) 22%,transparent)}
+.gp-abxy{display:grid;grid-template-columns:repeat(2,46px);grid-template-rows:repeat(2,46px);gap:4px;pointer-events:all}
+.gp-b{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-family:var(--orb);font-size:12px;font-weight:700;cursor:pointer;user-select:none;touch-action:manipulation;border:3px solid rgba(255,255,255,.18);box-shadow:0 4px 12px rgba(0,0,0,.5);transition:transform .1s}
+.gp-b:active,.gp-b.p{transform:scale(.85);filter:brightness(1.4)}
+.gp-b.a{background:#e60012}.gp-b.b{background:#1e90ff}.gp-b.x{background:#f5a623}.gp-b.y{background:#00b050}
+
+/* ══════════════════════════════════════
+   NOTIFICATIONS
+══════════════════════════════════════ */
+#notif-stack{position:fixed;top:66px;left:18px;z-index:600;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.notif{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:11px 15px;min-width:270px;max-width:330px;display:flex;align-items:flex-start;gap:11px;pointer-events:all;backdrop-filter:blur(18px);box-shadow:0 8px 32px rgba(0,0,0,.5);animation:notifIn .28s cubic-bezier(.34,1.4,.64,1) both}
+.notif.out{animation:notifOut .22s ease forwards}
+@keyframes notifIn{from{transform:translateX(-115%);opacity:0}to{transform:none;opacity:1}}
+@keyframes notifOut{to{transform:translateX(-115%);opacity:0}}
+.notif-ico{font-size:20px;flex-shrink:0}
+.notif-title{font-family:var(--orb);font-size:10px;font-weight:700;color:var(--tx0);letter-spacing:.5px;margin-bottom:2px}
+.notif-msg{font-size:12px;color:var(--tx1);line-height:1.5}
+
+/* Daily reward */
+#daily{position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.9);backdrop-filter:blur(14px);display:none;align-items:center;justify-content:center}
+#daily.on{display:flex}
+.daily-box{background:var(--bg1);border:1px solid var(--border2);border-radius:22px;padding:34px 28px;text-align:center;max-width:360px;width:90%;animation:popIn .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.daily-ico{font-size:60px;animation:float 2s ease infinite;display:block;margin-bottom:15px}
+.daily-h{font-family:var(--orb);font-size:17px;font-weight:900;color:var(--warn);letter-spacing:2px;margin-bottom:7px}
+.daily-sub{font-size:13px;color:var(--tx1);margin-bottom:20px;line-height:1.7}
+.daily-pts{font-family:var(--orb);font-size:32px;font-weight:900;color:var(--a);text-shadow:0 0 22px var(--glow);margin-bottom:22px}
+.daily-btn{width:100%;height:48px;border-radius:13px;background:linear-gradient(135deg,var(--warn),var(--a3));color:#000;font-family:var(--orb);font-size:12px;font-weight:900;letter-spacing:2px;cursor:pointer;border:none;transition:all .2s}
+.daily-btn:hover{transform:scale(1.04);box-shadow:0 8px 24px rgba(255,215,0,.35)}
+
+/* ══════════════════════════════════════
+   MISC
+══════════════════════════════════════ */
+#toast{position:fixed;bottom:68px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--bg2);border:1px solid var(--border2);color:var(--tx0);padding:9px 18px;border-radius:50px;font-size:13px;z-index:999;opacity:0;transition:all .24s;white-space:nowrap;pointer-events:none;backdrop-filter:blur(18px);box-shadow:0 6px 22px rgba(0,0,0,.45);max-width:92vw;text-align:center}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+#gp-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);background:color-mix(in srgb,var(--ok) 9%,transparent);border:1px solid color-mix(in srgb,var(--ok) 26%,transparent);color:var(--ok);font-family:var(--orb);font-size:9px;letter-spacing:1.5px;padding:4px 13px;border-radius:7px 7px 0 0;z-index:88;opacity:0;pointer-events:none;transition:opacity .35s}
+#gp-bar.on{opacity:1}
+.empty-st{text-align:center;padding:60px 20px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.empty-ico{font-size:52px;opacity:.14}
+.empty-h{font-family:var(--orb);font-size:14px;color:var(--tx1);letter-spacing:.5px}
+.empty-p{font-size:12px;color:var(--tx2);max-width:270px;line-height:1.8}
+
+/* Site loader */
+#sload{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .42s}
+#sload.done{opacity:0;pointer-events:none}
+.sl-logo{font-family:var(--orb);font-size:28px;font-weight:900;letter-spacing:3px;background:linear-gradient(90deg,var(--a),var(--a2),var(--a3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sl-bar{width:155px;height:2px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.sl-fill{height:100%;background:linear-gradient(90deg,var(--a),var(--a2));width:0;transition:width .3s}
+.sl-txt{font-family:var(--orb);font-size:9px;color:var(--tx2);letter-spacing:2px}
+</style>
+</head>
+<body>
+
+<!-- SITE LOADER -->
+<div id="sload">
+  <div style="font-size:50px;animation:float 2s ease infinite">🕹️</div>
+  <div class="sl-logo">ARCADE VAULT</div>
+  <div class="sl-bar"><div class="sl-fill" id="sl-fill"></div></div>
+  <div class="sl-txt" id="sl-txt">INITIALIZING...</div>
+</div>
+
+<!-- DAILY REWARD -->
+<div id="daily">
+  <div class="daily-box">
+    <span class="daily-ico">🎁</span>
+    <div class="daily-h">مكافأة اليوم!</div>
+    <div class="daily-sub">أهلاً بعودتك! استلم مكافأتك اليومية واستمر في رحلة الألعاب</div>
+    <div class="daily-pts" id="daily-pts">+50 XP</div>
+    <button class="daily-btn" onclick="collectDaily()">✨ استلام المكافأة</button>
+  </div>
+</div>
+
+<!-- NOTIFICATIONS -->
+<div id="notif-stack"></div>
+
+<!-- APP -->
+<div id="app">
+
+  <!-- HEADER -->
+  <div id="hdr">
+    <div id="logo" onclick="goNav('home')">
+      <div id="logo-mark">🕹</div>
+      <div id="logo-text">
+        <div id="logo-name">ARCADE VAULT</div>
+        <div id="logo-sub">PRO EDITION</div>
+      </div>
+    </div>
+    <div id="srch-wrap">
+      <input id="srch" type="text" placeholder="ابحث عن لعبة..." oninput="onSearch(this.value)">
+      <span id="srch-icon">⌕</span>
+    </div>
+    <div id="hdr-right">
+      <div class="hstat"><div class="hstat-n" id="h-gn">0</div><div class="hstat-l">GAMES</div></div>
+      <div class="hstat"><div class="hstat-n" id="h-xp" style="background:linear-gradient(90deg,var(--warn),var(--a3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">0</div><div class="hstat-l">XP</div></div>
+      <button class="hb" title="المفضلة" onclick="goNav('favorites')">❤<span class="hb-badge" id="fav-badge">0</span></button>
+      <button class="hb" title="الإعدادات" onclick="openSettings()">⚙</button>
+      <button class="hb" title="وضع النهار/الليل" id="theme-toggle" onclick="cycleTheme()">🌙</button>
+      <button class="hb" id="btn-sync" title="مزامنة" onclick="scanGames(true)">↻</button>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <div id="nav">
+    <button class="ntab on" id="tab-home"         onclick="goNav('home')">🏠 الرئيسية</button>
+    <button class="ntab"    id="tab-library"      onclick="goNav('library')">🎮 المكتبة <span class="nbadge" id="lib-badge">0</span></button>
+    <button class="ntab"    id="tab-systems"      onclick="goNav('systems')">📟 الأنظمة</button>
+    <button class="ntab"    id="tab-upload"       onclick="goNav('upload')">📤 رفع لعبة</button>
+    <button class="ntab"    id="tab-favorites"    onclick="goNav('favorites')">❤️ المفضلة</button>
+    <button class="ntab"    id="tab-leaderboard"  onclick="goNav('leaderboard')">🏆 النقاط</button>
+    <button class="ntab"    id="tab-achievements" onclick="goNav('achievements')">⭐ الإنجازات</button>
+  </div>
+
+  <!-- HOME -->
+  <div class="scr on" id="scr-home">
+    <div class="hero">
+      <div class="hero-tag">🕹 RETRO CLOUD GAMING PLATFORM</div>
+      <div class="hero-h"><span>ARCADE</span><br><span style="font-size:.65em;letter-spacing:8px">VAULT</span></div>
+      <div class="hero-sub">العب ألعابك الكلاسيكية مباشرة من المتصفح — محاكي متكامل، أغلفة حقيقية، ومنافسة مباشرة</div>
+      <div class="hero-stats">
+        <div class="hs-big"><div class="hs-big-n c1" id="hero-gn">0</div><div class="hs-big-l">GAMES</div></div>
+        <div class="hs-big"><div class="hs-big-n c2" id="hero-sys">0</div><div class="hs-big-l">SYSTEMS</div></div>
+        <div class="hs-big"><div class="hs-big-n c3" id="hero-xp">0</div><div class="hs-big-l">XP</div></div>
+      </div>
+    </div>
+    <div class="sh"><div class="sh-label">⭐ مميزة</div><div class="sh-line"></div></div>
+    <div class="feat-row" id="feat-row"></div>
+    <div class="sh"><div class="sh-label">🎮 الألعاب</div><div class="sh-line"></div><div class="sh-n" id="home-cnt">0</div></div>
+    <div class="pills" id="home-pills"></div>
+    <div class="ggrid" id="home-grid"></div>
+  </div>
+
+  <!-- LIBRARY -->
+  <div class="scr" id="scr-library">
+    <div class="sh"><div class="sh-label">📚 المكتبة الكاملة</div><div class="sh-line"></div><div class="sh-n" id="lib-cnt">0</div></div>
+    <div class="pills" id="lib-pills"></div>
+    <div class="ggrid" id="lib-grid"></div>
+  </div>
+
+  <!-- SYSTEMS -->
+  <div class="scr" id="scr-systems">
+    <div class="sh"><div class="sh-label">📟 الأنظمة المدعومة</div><div class="sh-line"></div></div>
+    <div class="sys-cards-grid" id="sys-grid"></div>
+  </div>
+
+  <!-- UPLOAD -->
+  <div class="scr" id="scr-upload">
+    <div class="sh"><div class="sh-label">📤 رفع ألعاب</div><div class="sh-line"></div></div>
+    <div style="max-width:680px;margin:0 auto">
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-inp').click()">
+        <span class="uz-ico">📦</span>
+        <div class="uz-title">استورد ألعابك</div>
+        <div class="uz-sub">اضغط أو اسحب الملفات — يدعم الاستخراج التلقائي من الأرشيف</div>
+        <div class="uz-badges">
+          <span class="uz-badge rom">🎮 ROM مباشر</span>
+          <span class="uz-badge zip">📦 ZIP Archive</span>
+          <span class="uz-badge gz">🗜 GZip (.gz)</span>
+        </div>
+      </div>
+      <input type="file" id="file-inp" style="display:none" multiple
+        accept=".nes,.smc,.sfc,.n64,.z64,.v64,.gb,.gbc,.gba,.nds,.md,.gen,.smd,.bin,.iso,.cue,.sms,.gg,.pbp,.cso,.a26,.a78,.lnx,.pce,.ngp,.ws,.wsc,.vb,.vboy,.zip,.gz,.bz2,.rvz,.gcm">
+      <div class="import-card" id="import-card">
+        <div class="import-fn" id="import-fn">—</div>
+        <div class="progress-track"><div class="progress-fill" id="import-fill" style="width:0%"></div></div>
+        <div class="import-meta"><span id="import-cnt">0 / 0</span><span id="import-status">—</span></div>
+      </div>
+      <div class="sh" style="margin-top:22px"><div class="sh-label">📱 الألعاب المرفوعة</div><div class="sh-line"></div><div class="sh-n" id="upload-cnt">0</div></div>
+      <div class="ggrid" id="upload-grid"></div>
+    </div>
+  </div>
+
+  <!-- FAVORITES -->
+  <div class="scr" id="scr-favorites">
+    <div class="sh"><div class="sh-label">❤️ المفضلة</div><div class="sh-line"></div></div>
+    <div class="ggrid" id="fav-grid"></div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div class="scr" id="scr-leaderboard">
+    <div class="sh"><div class="sh-label">🏆 أعلى النقاط</div><div class="sh-line"></div></div>
+    <div id="lb-list" style="max-width:680px"></div>
+  </div>
+
+  <!-- ACHIEVEMENTS -->
+  <div class="scr" id="scr-achievements">
+    <div class="sh"><div class="sh-label">⭐ الإنجازات</div><div class="sh-line"></div><div class="sh-n" id="ach-cnt">0/0</div></div>
+    <div class="ach-grid" id="ach-grid"></div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- GAME PAGE (full page detail) -->
+<div id="game-page">
+  <div class="gp-hero">
+    <canvas class="gp-hero-canvas" id="gp-bg-cv" width="1500" height="280"></canvas>
+    <img id="gp-bg-art" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;filter:blur(4px) brightness(.5)">
+    <div class="gp-hero-ov">
+      <div class="gp-cover-wrap">
+        <canvas id="gp-cv" width="130" height="178"></canvas>
+        <img id="gp-art" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none" crossorigin="anonymous">
+      </div>
+      <div class="gp-header-info">
+        <div class="gp-sys-label" id="gp-sys-lbl">—</div>
+        <div class="gp-title" id="gp-title">—</div>
+        <div class="gp-meta-row" id="gp-tags"></div>
+        <button class="gp-play-btn" onclick="playCurrentGame()">▶ &nbsp; العب الآن</button>
+      </div>
+    </div>
+    <button class="gp-back" onclick="closeGamePage()">←</button>
+  </div>
+  <div class="gp-body">
+    <div class="gp-sections">
+      <div>
+        <h3 style="font-family:var(--orb);font-size:11px;letter-spacing:2px;color:var(--tx2);margin-bottom:10px;text-transform:uppercase">🗒 وصف اللعبة</h3>
+        <div class="gp-desc" id="gp-desc">لا يوجد وصف.</div>
+        <h3 style="font-family:var(--orb);font-size:11px;letter-spacing:2px;color:var(--tx2);margin-bottom:10px;text-transform:uppercase">⭐ تقييمك</h3>
+        <div class="gp-stars-row" id="gp-stars">
+          <span class="gp-star" data-v="1">⭐</span><span class="gp-star" data-v="2">⭐</span>
+          <span class="gp-star" data-v="3">⭐</span><span class="gp-star" data-v="4">⭐</span>
+          <span class="gp-star" data-v="5">⭐</span>
+          <span style="font-family:var(--orb);font-size:10px;color:var(--tx2);margin-right:8px" id="gp-rating-lbl">انقر للتقييم</span>
+        </div>
+        <div class="gp-stats-box">
+          <div class="gp-stat-grid">
+            <div class="gp-stat-item"><div class="gp-stat-n" id="gp-plays">0</div><div class="gp-stat-l">مرة لُعبت</div></div>
+            <div class="gp-stat-item"><div class="gp-stat-n" id="gp-hs" style="color:var(--warn)">—</div><div class="gp-stat-l">أعلى نقطة</div></div>
+            <div class="gp-stat-item"><div class="gp-stat-n" id="gp-xp-earned">0</div><div class="gp-stat-l">XP مكتسب</div></div>
+            <div class="gp-stat-item"><div class="gp-stat-n" id="gp-rating-avg" style="color:var(--warn)">—</div><div class="gp-stat-l">تقييمك</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="gp-actions-col">
+        <button class="btn-play-full" onclick="playCurrentGame()">▶ &nbsp; تشغيل اللعبة</button>
+        <button class="btn-fav-full" id="gp-fav-btn" onclick="toggleFavPage()">🤍 &nbsp; إضافة للمفضلة</button>
+        <div class="gp-info-box">
+          <div class="gp-info-row"><span class="gp-info-lbl">النظام</span><span class="gp-info-val" id="gpi-sys">—</span></div>
+          <div class="gp-info-row"><span class="gp-info-lbl">السنة</span><span class="gp-info-val" id="gpi-yr">—</span></div>
+          <div class="gp-info-row"><span class="gp-info-lbl">النوع</span><span class="gp-info-val" id="gpi-genre">—</span></div>
+          <div class="gp-info-row"><span class="gp-info-lbl">الحجم</span><span class="gp-info-val" id="gpi-size">—</span></div>
+          <div class="gp-info-row"><span class="gp-info-lbl">المصدر</span><span class="gp-info-val" id="gpi-src">—</span></div>
+          <div class="gp-info-row"><span class="gp-info-lbl">الأداء</span><span class="gp-info-val" id="gpi-perf">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div id="settings">
+  <div class="stg-bar">
+    <button class="hb" onclick="closeSettings()">←</button>
+    <div class="stg-bar-title">SETTINGS — الإعدادات</div>
+  </div>
+  <div class="stg-body">
+
+    <div class="stg-sec">
+      <div class="stg-sec-lbl">🎨 السمة والمظهر</div>
+      <div class="stg-grp">
+        <div class="theme-picker" id="theme-picker"></div>
+      </div>
+    </div>
+
+    <div class="stg-sec">
+      <div class="stg-sec-lbl">☁ المصدر السحابي</div>
+      <div class="stg-grp">
+        <div class="stg-row" style="cursor:default">
+          <div class="stg-ico">🔗</div>
+          <div class="stg-inf"><div class="stg-t">وضع التشغيل</div><div class="stg-s" id="s-mode-s">تلقائي</div></div>
+          <div style="font-family:var(--orb);font-size:10px;color:var(--a)" id="s-mode-b">AUTO</div>
+        </div>
+        <div class="stg-row" style="cursor:default">
+          <div class="stg-ico">📁</div>
+          <div class="stg-inf"><div class="stg-t">مجلد الروم</div><div class="stg-s">الافتراضي: roms/</div></div>
+          <input class="stg-inp" id="s-folder" value="roms" style="width:75px;text-align:center" onchange="C.folder=this.value;save()">
+        </div>
+        <div class="stg-row" style="cursor:pointer" onclick="scanGames(true)">
+          <div class="stg-ico">🔄</div>
+          <div class="stg-inf"><div class="stg-t">مسح وتحديث الألعاب</div></div>
+          <span style="color:var(--tx2);font-size:16px">›</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stg-sec">
+      <div class="stg-sec-lbl">🐙 GitHub</div>
+      <div class="stg-grp">
+        <div class="stg-row" style="cursor:default">
+          <div class="stg-ico">👤</div>
+          <div class="stg-inf"><div class="stg-t">Repository</div><div class="stg-s" id="s-repo-lbl">—</div></div>
+        </div>
+        <div class="stg-inp-row">
+          <input class="stg-inp" id="s-owner" placeholder="username" onchange="C.owner=this.value;updateRepoLbl();save()">
+          <input class="stg-inp" id="s-repo" placeholder="repo" onchange="C.repo=this.value;updateRepoLbl();save()">
+        </div>
+        <div class="stg-inp-row">
+          <input class="stg-inp" id="s-token" placeholder="ghp_token (للمستودعات الخاصة)" type="password" onchange="C.token=this.value;save()">
+          <button class="stg-btn" onclick="scanGames(true)">مزامنة</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="stg-sec">
+      <div class="stg-sec-lbl">⚙ محرك المحاكاة</div>
+      <div class="stg-grp">
+        <div class="stg-row" style="cursor:default">
+          <div class="stg-ico">🔧</div><div class="stg-inf"><div class="stg-t">EmulatorJS CDN</div></div>
+        </div>
+        <div class="stg-inp-row">
+          <input class="stg-inp" id="s-ejs" onchange="C.ejs=this.value;save()">
+          <button class="stg-btn" onclick="save();toast('✅ تم الحفظ')">حفظ</button>
+        </div>
+        <div class="stg-row" style="cursor:default">
+          <div class="stg-ico">🎯</div><div class="stg-inf"><div class="stg-t">Core Overrides</div><div class="stg-s">نواة مخصصة لكل نظام</div></div>
+        </div>
+        <div id="core-list" style="padding:0 15px 12px;display:flex;flex-direction:column;gap:7px"></div>
+      </div>
+    </div>
+
+    <div class="stg-sec">
+      <div class="stg-sec-lbl">💾 BIOS</div>
+      <div class="stg-grp" id="bios-list"></div>
+    </div>
+
+    <div class="stg-sec">
+      <div class="stg-sec-lbl">⚡ الأداء والشبكة</div>
+      <div class="stg-grp">
+        <div class="stg-row" style="cursor:default">
+          <div class="stg-ico">🖥</div><div class="stg-inf"><div class="stg-t">WebGL</div><div class="stg-s" id="s-webgl">—</div></div>
+          <button class="stg-btn" onclick="checkWGL()">فحص</button>
+        </div>
+        <div class="stg-row" style="cursor:default">
+          <div class="stg-ico">⚠</div><div class="stg-inf"><div class="stg-t">تحذير الأنظمة الثقيلة</div></div>
+          <div class="tgl on" id="t-perf" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="stg-row" style="cursor:default">
+          <div class="stg-ico">🔀</div><div class="stg-inf"><div class="stg-t">CORS Proxy</div><div class="stg-s">لحل مشاكل الروابط</div></div>
+        </div>
+        <div class="stg-inp-row">
+          <input class="stg-inp" id="s-proxy" placeholder="https://corsproxy.io/?" onchange="C.proxy=this.value;save()">
+          <button class="stg-btn d" onclick="C.proxy='';document.getElementById('s-proxy').value='';save();toast('⚠ مُسح')">مسح</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="stg-sec">
+      <div class="stg-sec-lbl">📺 العرض والفلاتر</div>
+      <div class="stg-grp">
+        <div class="stg-row" style="cursor:default">
+          <div class="stg-ico">🎨</div><div class="stg-inf"><div class="stg-t">CRT Shader</div><div class="stg-s">فلتر بصري أثناء اللعب</div></div>
+        </div>
+        <div class="shader-grid" id="shader-grid"></div>
+        <div class="stg-row" style="border-top:1px solid var(--border);cursor:default">
+          <div class="stg-ico">🖼</div><div class="stg-inf"><div class="stg-t">أغلفة Box Art</div><div class="stg-s">من Libretro Thumbnails</div></div>
+          <div class="tgl on" id="t-art" onclick="toggleArt()"></div>
+        </div>
+        <div class="stg-row" style="cursor:default">
+          <div class="stg-ico">📱</div><div class="stg-inf"><div class="stg-t">أزرار على الشاشة</div></div>
+          <div class="tgl" id="t-gp" onclick="toggleGpUi()"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stg-sec">
+      <div class="stg-sec-lbl">💾 الحفظ والتقدم</div>
+      <div class="stg-grp">
+        <div class="stg-row" style="cursor:default">
+          <div class="stg-ico">⏱</div><div class="stg-inf"><div class="stg-t">حفظ تلقائي</div><div class="stg-s">كل 60 ثانية</div></div>
+          <div class="tgl on" id="t-as" onclick="this.classList.toggle('on');save()"></div>
+        </div>
+        <div class="stg-row" style="cursor:pointer" onclick="resetProgress()">
+          <div class="stg-ico" style="color:var(--err)">🗑</div><div class="stg-inf"><div class="stg-t" style="color:var(--err)">إعادة ضبط التقدم</div></div>
+          <span style="color:var(--tx2);font-size:16px">›</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:18px;font-family:var(--orb);font-size:8px;color:var(--tx3);letter-spacing:2px">ARCADE VAULT PRO · 27 SYSTEMS · CLOUD + LOCAL + THEMES</div>
+  </div>
+</div>
+
+<!-- EMULATOR -->
+<div id="emu">
+  <div id="emu-bar" style="position:relative">
+    <div class="emu-sys-logo" id="emu-sys-ico">🎮</div>
+    <button class="emu-back" onclick="exitEmu()">←</button>
+    <div class="emu-info">
+      <div class="emu-t" id="emu-t">—</div>
+      <div class="emu-s" id="emu-s">—</div>
+    </div>
+    <div class="emu-as" id="emu-as"><div class="as-dot"></div><span>AUTO</span></div>
+    <div class="emu-btns">
+      <button class="eb" id="btn-save" onclick="doSave()">💾 حفظ</button>
+      <button class="eb" onclick="doLoad()">📂 تحميل</button>
+      <button class="eb" onclick="toggleQP()">⚙</button>
+      <button class="eb" onclick="doFS()">⛶</button>
+    </div>
+  </div>
+  <div id="emu-body">
+    <div id="emu-load">
+      <div class="load-poster"><img id="l-img" style="display:none" crossorigin="anonymous"><canvas id="l-cvs" width="98" height="136"></canvas></div>
+      <div class="load-title" id="l-title">جاري التحميل...</div>
+      <div class="load-sys-lbl" id="l-sys"></div>
+      <div class="load-st" id="l-st"></div>
+      <div class="load-track"><div class="load-fill"></div></div>
+    </div>
+    <div id="emu-err">
+      <div class="err-h">⚠ تعذّر التشغيل</div>
+      <div class="err-box"><ul id="err-list"></ul></div>
+      <button class="err-back" onclick="closeErr()">← رجوع</button>
+    </div>
+    <iframe id="emu-frame" allowfullscreen allow="autoplay;fullscreen;gamepad"></iframe>
+    <div id="qp">
+      <div class="qp-head"><div class="qp-ttl">QUICK MENU</div><button class="qp-x" onclick="toggleQP()">✕</button></div>
+      <div class="qp-body">
+        <div class="qp-sec">SAVE SLOT</div>
+        <div class="qp-slots" id="qp-slots"></div>
+        <button class="qp-btn" onclick="doSave()"><div class="qp-ico" style="background:rgba(0,255,136,.1)">💾</div>حفظ الحالة</button>
+        <button class="qp-btn" onclick="doLoad()"><div class="qp-ico" style="background:rgba(30,144,255,.1)">📂</div>تحميل الحالة</button>
+        <div class="qp-sec" style="margin-top:6px">DISPLAY</div>
+        <div class="qp-shaders" id="qp-shaders"></div>
+        <div class="qp-sec" style="margin-top:6px">CONTROLS</div>
+        <button class="qp-btn" onclick="toggleGpUi();toggleQP()"><div class="qp-ico" style="background:rgba(130,100,255,.1)">🕹</div>أزرار الشاشة</button>
+        <button class="qp-btn" onclick="toggleScoreInp()"><div class="qp-ico" style="background:rgba(255,215,0,.1)">🏆</div>تسجيل نقطة</button>
+        <button class="qp-btn danger" onclick="exitEmu()"><div class="qp-ico" style="background:rgba(255,64,96,.1)">✕</div>إغلاق اللعبة</button>
+      </div>
+    </div>
+    <div id="qp-toggle" onclick="toggleQP()">☰</div>
+    <div id="score-inp">
+      <div style="font-family:var(--orb);font-size:11px;color:var(--emu-acc,#00d4ff);margin-bottom:11px;letter-spacing:1px">💯 سجّل نقطتك</div>
+      <input id="score-v" type="number" placeholder="النقطة">
+      <button class="score-submit" onclick="submitScore()">✔ حفظ النقطة</button>
+      <button onclick="toggleScoreInp()" style="width:100%;height:30px;border-radius:8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:#fff;font-size:12px;cursor:pointer">إلغاء</button>
+    </div>
+    <div id="gp-ui">
+      <div>
+        <div class="gpd">
+          <div></div><div class="gpd-btn" data-k="ArrowUp" onpointerdown="gpD(this)" onpointerup="gpU(this)" onpointerleave="gpU(this)">▲</div><div></div>
+          <div class="gpd-btn" data-k="ArrowLeft" onpointerdown="gpD(this)" onpointerup="gpU(this)" onpointerleave="gpU(this)">◀</div><div></div><div class="gpd-btn" data-k="ArrowRight" onpointerdown="gpD(this)" onpointerup="gpU(this)" onpointerleave="gpU(this)">▶</div>
+          <div></div><div class="gpd-btn" data-k="ArrowDown" onpointerdown="gpD(this)" onpointerup="gpU(this)" onpointerleave="gpU(this)">▼</div><div></div>
+        </div>
+      </div>
+      <div class="gp-center">
+        <div class="gp-mrow">
+          <button class="gp-mid" data-k="Shift" onpointerdown="gpD(this)" onpointerup="gpU(this)">SEL</button>
+          <button class="gp-mid" data-k="Enter" onpointerdown="gpD(this)" onpointerup="gpU(this)">STA</button>
+        </div>
+      </div>
+      <div>
+        <div class="gp-abxy">
+          <div class="gp-b y" data-k="w" onpointerdown="gpD(this)" onpointerup="gpU(this)" onpointerleave="gpU(this)">Y</div>
+          <div class="gp-b b" data-k="d" onpointerdown="gpD(this)" onpointerup="gpU(this)" onpointerleave="gpU(this)">B</div>
+          <div class="gp-b x" data-k="a" onpointerdown="gpD(this)" onpointerup="gpU(this)" onpointerleave="gpU(this)">X</div>
+          <div class="gp-b a" data-k="s" onpointerdown="gpD(this)" onpointerup="gpU(this)" onpointerleave="gpU(this)">A</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="gp-bar"></div>
+
+<!-- ═══════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ── SYSTEMS REGISTRY ─────────────────── */
+const SYS = {
+  nes:  {n:'NES',  f:'Nintendo Entertainment System',c:'nes',        ico:'🎮',col:'#e03535',p:1,st:'nes',
+         lf:'Nintendo - Nintendo Entertainment System',cores:['nes','fceumm','nestopia'],bio:null,
+         yr:1983,genres:['Action','Platform'],
+         desc:'جهاز النينتندو الأسطوري الذي غيّر عالم الألعاب إلى الأبد. يضم مئات الألعاب الكلاسيكية التي لا تُنسى مثل سوبر ماريو ولعبة زيلدا.'},
+  snes: {n:'SNES', f:'Super Nintendo',               c:'snes',       ico:'🎮',col:'#7040c0',p:1,st:'snes',
+         lf:'Nintendo - Super Nintendo Entertainment System',cores:['snes','snes9x'],bio:null,
+         yr:1990,genres:['Action','RPG'],
+         desc:'سوبر نينتندو — محطة جيل 16-بت التي أحدثت ثورة في الرسوم والموسيقى. تضم روائع مثل Final Fantasy وZelda وDonkey Kong Country.'},
+  n64:  {n:'N64',  f:'Nintendo 64',                  c:'n64',        ico:'🎮',col:'#1a90c0',p:2,st:'n64',
+         lf:'Nintendo - Nintendo 64',cores:['n64','mupen64plus'],bio:null,
+         yr:1996,genres:['Action','Racing'],
+         desc:'نينتندو 64 — أول تجربة ثلاثية الأبعاد حقيقية. ألعاب مثل Super Mario 64 وOcarina of Time غيّرت مفهوم ألعاب الفيديو للأبد.'},
+  gc:   {n:'GC',   f:'Nintendo GameCube',            c:'dolphin',    ico:'🎲',col:'#6020a0',p:4,st:'n64',
+         lf:'Nintendo - GameCube',cores:['dolphin'],bio:null,
+         yr:2001,genres:['Action'],
+         desc:'GameCube — جهاز نينتندو الكيوتي بشكله المميز. يضم ألعاباً رائعة مثل Super Smash Bros وMetroid Prime.'},
+  gb:   {n:'GB',   f:'Game Boy',                     c:'gb',         ico:'🕹',col:'#60a020',p:1,st:'gb',
+         lf:'Nintendo - Game Boy',cores:['gb','gambatte','sameboy'],bio:null,
+         yr:1989,genres:['Puzzle','Platform'],
+         desc:'Game Boy — المحطة المحمولة الأسطورية التي أطلقت عالم البوكيمون. صغير الحجم لكنه ضخم في التأثير.'},
+  gbc:  {n:'GBC',  f:'Game Boy Color',               c:'gbc',        ico:'🕹',col:'#20a0c0',p:1,st:'gb',
+         lf:'Nintendo - Game Boy Color',cores:['gbc','gambatte'],bio:null,
+         yr:1998,genres:['RPG','Puzzle'],
+         desc:'نسخة ملونة من Game Boy مع ألعاب رائعة ومحسّنة. يدعم الألعاب القديمة بالإضافة إلى ألعاب الألوان الجديدة.'},
+  gba:  {n:'GBA',  f:'Game Boy Advance',             c:'gba',        ico:'🕹',col:'#8050c0',p:1,st:'gba',
+         lf:'Nintendo - Game Boy Advance',cores:['gba','mgba'],bio:null,
+         yr:2001,genres:['Action','RPG'],
+         desc:'Game Boy Advance — قوة سوبر نينتندو في جيبك. تضم من أروع ألعاب الـ RPG مثل Golden Sun وPokémon Emerald وZelda: Minish Cap.'},
+  nds:  {n:'NDS',  f:'Nintendo DS',                  c:'nds',        ico:'🎮',col:'#c03030',p:2,st:'snes',
+         lf:'Nintendo - Nintendo DS',cores:['nds','melonds'],bio:null,
+         yr:2004,genres:['RPG','Puzzle'],
+         desc:'Nintendo DS — المحطة المزدوجة الشاشات مع تقنية اللمس. تضم روائع مثل Pokémon Diamond ومئات الألعاب الفريدة.'},
+  md:   {n:'MD',   f:'Sega Mega Drive',              c:'segaMD',     ico:'🕹',col:'#2050a0',p:1,st:'sega',
+         lf:'Sega - Mega Drive - Genesis',cores:['segaMD','genesis_plus_gx','picodrive'],bio:null,
+         yr:1988,genres:['Action','Racing'],
+         desc:'Sega Mega Drive — المنافس الأزلي لسوبر نينتندو. بيت Sonic the Hedgehog وStreets of Rage ومئات الألعاب الأسطورية.'},
+  sms:  {n:'SMS',  f:'Sega Master System',           c:'segaMS',     ico:'🕹',col:'#105090',p:1,st:'sega',
+         lf:'Sega - Master System - Mark III',cores:['segaMS'],bio:null,
+         yr:1985,genres:['Action'],
+         desc:'Sega Master System — المنافس الأول لـ NES. يضم ألعاباً كلاسيكية لا تُنسى من حقبة الثمانينات.'},
+  gg:   {n:'GG',   f:'Sega Game Gear',               c:'segaGG',     ico:'🕹',col:'#208060',p:1,st:'sega',
+         lf:'Sega - Game Gear',cores:['segaGG'],bio:null,
+         yr:1990,genres:['Action'],
+         desc:'Sega Game Gear — المنافس الملون لـ Game Boy من سيغا. قوة Mega Drive في منصة محمولة مع شاشة ملونة رائعة.'},
+  scd:  {n:'SCD',  f:'Sega CD',                      c:'segaCD',     ico:'💿',col:'#207040',p:2,st:'sega',
+         lf:'Sega - Mega-CD',cores:['segaCD'],bio:'bios_CD_U.bin',
+         yr:1991,genres:['Action'],
+         desc:'Sega CD — إضافة قرص مضغوط لـ Mega Drive تتيح ألعاباً بموسيقى أوركسترالية وفيديوهات FMV. تجربة فريدة من نوعها.'},
+  s32x: {n:'32X',  f:'Sega 32X',                     c:'sega32x',    ico:'🕹',col:'#a02020',p:2,st:'sega',
+         lf:'Sega - 32X',cores:['sega32x','picodrive'],bio:null,
+         yr:1994,genres:['Action'],
+         desc:'Sega 32X — ترقية قوة لـ Mega Drive لمواجهة PlayStation. ألعاب ثلاثية الأبعاد مبكرة وتجارب فريدة.'},
+  sat:  {n:'SAT',  f:'Sega Saturn',                  c:'yabause',    ico:'💿',col:'#808010',p:4,st:'sega',
+         lf:'Sega - Saturn',cores:['yabause','mednafen_saturn'],bio:'sega_101.bin',
+         yr:1994,genres:['Action','RPG'],
+         desc:'Sega Saturn — منصة 32-بت بمكتبة ألعاب ضخمة في اليابان. تضم Panzer Dragoon وNiGHTS وعشرات الروائع النادرة.'},
+  dc:   {n:'DC',   f:'Sega Dreamcast',               c:'flycast',    ico:'💿',col:'#e06010',p:3,st:'dc',
+         lf:'Sega - Dreamcast',cores:['flycast'],bio:'dc_boot.bin',
+         yr:1998,genres:['Action'],
+         desc:'Sega Dreamcast — آخر أجهزة سيغا وأكثرها إبداعاً. تضم Shenmue وSoul Calibur وJet Set Radio. استباق حقيقي لعصره.'},
+  psx:  {n:'PS1',  f:'PlayStation 1',                c:'psx',        ico:'🎮',col:'#102870',p:2,st:'ps',
+         lf:'Sony - PlayStation',cores:['psx','pcsx_rearmed','mednafen_psx'],bio:'scph1001.bin',
+         yr:1994,genres:['Action','RPG'],
+         desc:'PlayStation الأصلي — الجهاز الذي أطلق عصر 3D الحقيقي. Final Fantasy VII وMetal Gear Solid وCrash Bandicoot وعشرات الروائع.'},
+  psp:  {n:'PSP',  f:'PlayStation Portable',         c:'ppsspp',     ico:'🎮',col:'#102060',p:3,st:'psp',
+         lf:'Sony - PlayStation Portable',cores:['ppsspp'],bio:null,
+         yr:2005,genres:['Action','RPG'],
+         desc:'PSP — محطة PlayStation المحمولة بقوة PS2. مكتبة ضخمة تضم God of War وMonster Hunter وCrisis Core.'},
+  fbneo:{n:'FBNeo',f:'Arcade (Final Burn Neo)',       c:'fbneo',      ico:'🕹',col:'#c0a000',p:1,st:'arcade',
+         lf:'FBNeo - Arcade Games',cores:['fbneo'],bio:null,
+         yr:1990,genres:['Arcade','Fighting'],
+         desc:'Final Burn Neo — محاكي قاعات الألعاب الأسطورية. Street Fighter وMortal Kombat وKing of Fighters وعشرات الكلاسيكيات.'},
+  mame: {n:'MAME', f:'MAME 2003+',                   c:'mame2003plus',ico:'🕹',col:'#c03030',p:2,st:'arcade',
+         lf:'MAME',cores:['mame2003plus','mame2000'],bio:null,
+         yr:1997,genres:['Arcade'],
+         desc:'MAME — المحاكي الشامل لقاعات الألعاب. يدعم آلاف الألعاب من الثمانينات والتسعينات.'},
+  a2600:{n:'A2600',f:'Atari 2600',                   c:'atari2600',  ico:'🕹',col:'#e05010',p:1,st:'atari',
+         lf:'Atari - 2600',cores:['atari2600','stella'],bio:null,
+         yr:1977,genres:['Arcade'],
+         desc:'Atari 2600 — رائد صناعة ألعاب الفيديو المنزلية. Pac-Man وSpace Invaders وPitfall — التاريخ الحقيقي للألعاب.'},
+  a7800:{n:'A7800',f:'Atari 7800',                   c:'atari7800',  ico:'🕹',col:'#c03010',p:1,st:'atari',
+         lf:'Atari - 7800',cores:['atari7800'],bio:null,
+         yr:1984,genres:['Arcade'],
+         desc:'Atari 7800 — الجهاز المحسّن من أتاري مع توافق عكسي مع Atari 2600.'},
+  lynx: {n:'Lynx', f:'Atari Lynx',                   c:'lynx',       ico:'🕹',col:'#e08020',p:1,st:'atari',
+         lf:'Atari - Lynx',cores:['lynx','handy'],bio:'lynxboot.img',
+         yr:1989,genres:['Action'],
+         desc:'Atari Lynx — أول منصة ألعاب محمولة بشاشة ملونة. تقنية متقدمة لعصرها مع ألعاب مميزة.'},
+  pce:  {n:'PCE',  f:'PC Engine / TurboGrafx-16',    c:'pce',        ico:'🕹',col:'#e05020',p:1,st:'sega',
+         lf:'NEC - PC Engine - TurboGrafx 16',cores:['pce','mednafen_pce'],bio:null,
+         yr:1987,genres:['Action','Arcade'],
+         desc:'PC Engine — المنافس الياباني القوي من NEC. ألعاب رائدة مثل Bonk وR-Type وChip\'s Challenge.'},
+  ngp:  {n:'NGP',  f:'Neo Geo Pocket Color',         c:'ngp',        ico:'🕹',col:'#c09000',p:1,st:'arcade',
+         lf:'SNK - Neo Geo Pocket Color',cores:['ngp'],bio:null,
+         yr:1998,genres:['Fighting','Arcade'],
+         desc:'Neo Geo Pocket Color — منصة SNK المحمولة بألعاب قتال رائعة مثل King of Fighters ومكتبة محدودة لكن عالية الجودة.'},
+  ws:   {n:'WS',   f:'WonderSwan Color',             c:'ws',         ico:'🕹',col:'#009090',p:1,st:'gb',
+         lf:'Bandai - WonderSwan Color',cores:['ws','mednafen_wswan'],bio:null,
+         yr:1999,genres:['Puzzle'],
+         desc:'WonderSwan Color — منصة بانداي المحمولة اليابانية. Final Fantasy وBreath of Fire بجودة رائعة على شاشة ملونة.'},
+  dos:  {n:'DOS',  f:'MS-DOS',                       c:'dosbox',     ico:'💻',col:'#10c050',p:1,st:'dos',
+         lf:'DOS',cores:['dosbox','dosbox_pure'],bio:null,
+         yr:1981,genres:['Action'],
+         desc:'MS-DOS — ألعاب الحاسوب الكلاسيكية من حقبة الثمانينات والتسعينات. DOOM وDuke Nukem وWolfenstein 3D.'},
+  vb:   {n:'VBoy', f:'Nintendo Virtual Boy',         c:'vb',         ico:'👓',col:'#c01010',p:1,st:'nes',
+         lf:'Nintendo - Virtual Boy',cores:['vb'],bio:null,
+         yr:1995,genres:['Puzzle'],
+         desc:'Virtual Boy — تجربة Nintendo الفريدة والنادرة في الواقع الافتراضي المبكر. يعرض باللون الأحمر فقط بتصميم ثلاثي الأبعاد مذهل.'},
+};
+
+const EXT={
+  '.nes':'nes','.smc':'snes','.sfc':'snes','.n64':'n64','.z64':'n64','.v64':'n64',
+  '.gcm':'gc','.gcz':'gc','.rvz':'gc','.wbfs':'gc','.gb':'gb','.gbc':'gbc','.gba':'gba','.nds':'nds',
+  '.md':'md','.gen':'md','.smd':'md','.bin':'psx','.iso':'psx','.sms':'sms','.gg':'gg',
+  '.cue':'scd','.chd':'dc','.gdi':'dc','.cdi':'dc','.32x':'s32x','.pbp':'psp','.cso':'psp',
+  '.a26':'a2600','.a78':'a7800','.lnx':'lynx','.pce':'pce','.ngp':'ngp','.ngc':'ngp',
+  '.ngpc':'ngp','.ws':'ws','.wsc':'ws','.vb':'vb','.vboy':'vb','.zip':'fbneo','.exe':'dos','.img':'psx',
+};
+const PERF=['','⚡ خفيف','⚡⚡ متوسط','🔥 ثقيل','💀 ثقيل جداً'];
+const PERF_C=['','p1','p2','p3','p4'];
+
+/* ── THEMES ─────────────────────────── */
+const THEMES=[
+  {id:'void',  n:'VOID',   bg:'#050508',c1:'#00d4ff',c2:'#7c5cfc',c3:'#fc5c8c'},
+  {id:'oled',  n:'OLED',   bg:'#000000',c1:'#00e5ff',c2:'#aa00ff',c3:'#ff1744'},
+  {id:'cyber', n:'CYBER',  bg:'#020a05',c1:'#00ff88',c2:'#00ccff',c3:'#ffcc00'},
+  {id:'sunset',n:'SUNSET', bg:'#0a0408',c1:'#ff6b9d',c2:'#ff9a3c',c3:'#ffd700'},
+  {id:'ocean', n:'OCEAN',  bg:'#020810',c1:'#40e0ff',c2:'#0066ff',c3:'#00ffcc'},
+  {id:'light', n:'LIGHT',  bg:'#f0f0f8',c1:'#0066cc',c2:'#5533cc',c3:'#cc0066'},
+];
+let themeIdx=0;
+
+/* ── SHADERS ─────────────────────────── */
+const SHADERS=[
+  {id:'none', l:'بدون',     ico:'🖥'},
+  {id:'scan', l:'Scanlines',ico:'📺'},
+  {id:'crt',  l:'CRT',      ico:'📡'},
+  {id:'warm', l:'Warm',     ico:'🕯'},
+  {id:'neon', l:'Neon',     ico:'⚡'},
+  {id:'pixel',l:'Pixel',    ico:'🔲'},
+  {id:'gb',   l:'GameBoy',  ico:'💚'},
+];
+
+/* ── ACHIEVEMENTS ────────────────────── */
+const ACHS=[
+  {id:'first',  ico:'🎮',n:'أول لعبة!',     desc:'العب لعبتك الأولى',             xp:10, ck:s=>s.played>=1},
+  {id:'p5',     ico:'🕹',n:'لاعب نشط',      desc:'العب 5 ألعاب مختلفة',           xp:25, ck:s=>s.uniq>=5},
+  {id:'p10',    ico:'🎯',n:'هاوي ألعاب',    desc:'العب 10 ألعاب مختلفة',          xp:50, ck:s=>s.uniq>=10},
+  {id:'fav5',   ico:'❤️',n:'عاشق الألعاب', desc:'أضف 5 ألعاب للمفضلة',           xp:15, ck:s=>s.favs>=5},
+  {id:'score1', ico:'⭐',n:'سجّل نقطة',     desc:'سجّل نقطتك لأول مرة',          xp:20, ck:s=>s.scores>=1},
+  {id:'xp100',  ico:'💯',n:'100 XP',        desc:'اجمع 100 نقطة خبرة',            xp:0,  ck:s=>s.xp>=100},
+  {id:'xp500',  ico:'🌟',n:'500 XP',        desc:'اجمع 500 نقطة خبرة',            xp:0,  ck:s=>s.xp>=500},
+  {id:'xp1k',   ico:'🏆',n:'محترف',         desc:'اجمع 1000 نقطة خبرة',           xp:100,ck:s=>s.xp>=1000},
+  {id:'upload', ico:'📤',n:'مطور المكتبة',  desc:'ارفع لعبة من جهازك',            xp:30, ck:s=>s.uploads>=1},
+  {id:'rate3',  ico:'🌠',n:'ناقد',          desc:'قيّم 3 ألعاب مختلفة',           xp:20, ck:s=>s.ratings>=3},
+  {id:'daily3', ico:'📅',n:'وفي',           desc:'استلم المكافأة اليومية 3 مرات', xp:30, ck:s=>s.streak>=3},
+  {id:'sys5',   ico:'🌍',n:'مستكشف',        desc:'العب على 5 أنظمة مختلفة',       xp:40, ck:s=>s.sysCnt>=5},
+];
+
+/* ── STATE ───────────────────────────── */
+let games=[], favs=new Set(), scores={}, ratings={}, plays={};
+let hFilter='all', lFilter='all';
+let C={ejs:'https://cdn.emulatorjs.org/stable/data/',proxy:'',folder:'roms',shader:'none',
+       art:true,gpUi:false,theme:'void',owner:'',repo:'',branch:'main',token:'',bios:{},cores:{}};
+let XP=0, achDone=new Set();
+let PS={played:0,uniq:0,favs:0,scores:0,ratings:0,uploads:0,streak:0,sysCnt:0,xp:0};
+let blobUrls=[], asTimer=null, saveSlot=1, activeGame=null, currentPageGame=null;
+let isLocal=false, isGH=false;
+const artCache=new Map(), cvC=new Map();
+
+/* ── HELPERS ─────────────────────────── */
+const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const sl=ms=>new Promise(r=>setTimeout(r,ms));
+const g2s=id=>SYS[id]||{n:id.toUpperCase(),f:id,c:id,ico:'🎮',col:'#00d4ff',p:1,st:'default',cores:[id],bio:null,yr:'?',genres:['Other'],desc:''};
+const isFav=id=>favs.has(id);
+const fmtSz=b=>{if(!b||b<64)return'';if(b<1048576)return(b/1024|0)+'KB';return(b/1048576).toFixed(1)+'MB'};
+let _tt;
+function toast(m,d=2600){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('on'),d)}
+function save(){try{localStorage.setItem('av3cfg',JSON.stringify(C))}catch{}}
+function saveFavs(){try{localStorage.setItem('av3fav',JSON.stringify([...favs]));PS.favs=favs.size;saveProgress()}catch{}}
+function saveScores(){try{localStorage.setItem('av3sc',JSON.stringify(scores))}catch{}}
+function saveProgress(){PS.xp=XP;try{localStorage.setItem('av3prog',JSON.stringify({xp:XP,ach:[...achDone],ps:PS}))}catch{}}
+
+/* ── THEME ───────────────────────────── */
+function applyTheme(id){
+  C.theme=id;save();
+  const t=THEMES.find(x=>x.id===id)||THEMES[0];
+  const r=document.documentElement;
+  r.dataset.theme=id;
+  r.style.setProperty('--a',t.c1);r.style.setProperty('--a2',t.c2);r.style.setProperty('--a3',t.c3);
+  if(id==='light'){
+    // Light theme overrides
+    r.style.removeProperty('--bg');r.style.removeProperty('--bg1');
+  } else {
+    // Dark themes: shift background
+    const lighten=(h,a)=>{const n=parseInt(h.replace('#',''),16);const R=Math.min(255,((n>>16)&255)+a),G=Math.min(255,((n>>8)&255)+a),B=Math.min(255,(n&255)+a);return`#${R.toString(16).padStart(2,'0')}${G.toString(16).padStart(2,'0')}${B.toString(16).padStart(2,'0')}`};
+    r.style.setProperty('--bg',t.bg);
+    r.style.setProperty('--bg1',lighten(t.bg,7));r.style.setProperty('--bg2',lighten(t.bg,13));
+    r.style.setProperty('--bg3',lighten(t.bg,19));r.style.setProperty('--bg4',lighten(t.bg,27));
+    r.style.setProperty('--bg5',lighten(t.bg,37));
+    const rgba=(h,a)=>{const n=parseInt(h.replace('#',''),16);return`rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`};
+    r.style.setProperty('--glow',rgba(t.c1,.35));r.style.setProperty('--glow2',rgba(t.c2,.35));
+    r.style.setProperty('--hdr-bg',rgba(t.bg,.95));
+    r.style.setProperty('--card-bg',rgba(lighten(t.bg,11),.85));
+    document.getElementById('meta-color').content=t.bg;
+  }
+  document.querySelectorAll('.theme-opt').forEach(el=>el.classList.toggle('on',el.dataset.t===id));
+  document.getElementById('theme-toggle').textContent=id==='light'?'🌙':'☀️';
+}
+function cycleTheme(){
+  themeIdx=(themeIdx+1)%THEMES.length;
+  applyTheme(THEMES[themeIdx].id);
+  toast('🎨 '+THEMES[themeIdx].n);
+}
+
+/* ── SYSTEM EMULATOR THEME ──────────── */
+function applyEmuSysTheme(sysId){
+  const s=g2s(sysId);
+  document.documentElement.dataset.sysTheme=s.st||'default';
+  document.getElementById('emu-sys-ico').textContent=s.ico||'🎮';
+}
+
+/* ── XP & ACHIEVEMENTS ──────────────── */
+function addXP(v,why=''){
+  XP+=v;
+  document.getElementById('h-xp').textContent=XP;
+  document.getElementById('hero-xp').textContent=XP;
+  if(why&&v>0)notify('⚡ +'+v+' XP',why,2200);
+  checkAch();saveProgress();
+}
+function checkAch(){
+  let newOne=false;
+  ACHS.forEach(a=>{
+    if(achDone.has(a.id))return;
+    if(a.ck(PS)){achDone.add(a.id);newOne=true;if(a.xp>0)XP+=a.xp;notify('🏆 إنجاز: '+a.n,a.desc,4500);saveProgress();renderAch();}
+  });
+  document.getElementById('ach-cnt').textContent=achDone.size+'/'+ACHS.length;
+}
+function notify(title,msg,dur=3000){
+  const s=document.getElementById('notif-stack');
+  const d=document.createElement('div');d.className='notif';
+  d.innerHTML=`<div class="notif-ico">🔔</div><div><div class="notif-title">${esc(title)}</div><div class="notif-msg">${esc(msg)}</div></div>`;
+  s.appendChild(d);setTimeout(()=>{d.classList.add('out');setTimeout(()=>d.remove(),280)},dur);
+}
+
+/* ── DAILY REWARD ────────────────────── */
+function checkDaily(){
+  const last=localStorage.getItem('av3daily')||'';const today=new Date().toDateString();
+  if(last!==today){
+    const str=parseInt(localStorage.getItem('av3streak')||'0')+1;
+    localStorage.setItem('av3streak',str);PS.streak=str;
+    const pts=Math.min(50+str*8,150);
+    document.getElementById('daily-pts').textContent='+'+pts+' XP';
+    setTimeout(()=>document.getElementById('daily').classList.add('on'),1800);
+  }
+}
+function collectDaily(){
+  const str=parseInt(localStorage.getItem('av3streak')||'1');
+  const pts=Math.min(50+str*8,150);
+  localStorage.setItem('av3daily',new Date().toDateString());
+  document.getElementById('daily').classList.remove('on');
+  addXP(pts,'مكافأة يومية');
+}
+
+/* ── ART (Libretro Thumbnails) ───────── */
+async function getArt(title,sysId){
+  if(!C.art)return null;
+  const k=sysId+'|'+title;if(artCache.has(k))return artCache.get(k);
+  const s=g2s(sysId);if(!s.lf){artCache.set(k,null);return null}
+  const clean=title.replace(/[:<>"/\\|?*]/g,'').trim();
+  const tryFetch=async n=>{
+    try{const r=await fetch(`https://thumbnails.libretro.com/${encodeURIComponent(s.lf)}/Named_Boxarts/${encodeURIComponent(n)}.png`,{method:'HEAD'});
+    if(r.ok)return`https://thumbnails.libretro.com/${encodeURIComponent(s.lf)}/Named_Boxarts/${encodeURIComponent(n)}.png`}catch{}return null;
+  };
+  let u=await tryFetch(clean);
+  if(!u)u=await tryFetch(clean.replace(/\s*\([^)]*\)/g,'').trim());
+  artCache.set(k,u);return u;
+}
+
+/* ── COVER CANVAS ────────────────────── */
+function hash(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=(h*0x01000193)>>>0}return h}
+function genCover(title,col,ico,w=200,h=280){
+  const k=`${title}|${col}|${w}|${h}`;if(cvC.has(k))return cvC.get(k);
+  const cv=document.createElement('canvas');cv.width=w;cv.height=h;const ctx=cv.getContext('2d');
+  const hv=hash(title||'?');
+  const h1=(hv%360+360)%360,h2=(h1+70+((hv>>8)%60))%360,h3=(h1+165+((hv>>16)%60))%360;
+  const g=ctx.createLinearGradient(0,0,w,h);
+  g.addColorStop(0,`hsl(${h1},68%,9%)`);g.addColorStop(.5,`hsl(${h2},58%,6%)`);g.addColorStop(1,`hsl(${h3},72%,5%)`);
+  ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+  // Grid lines
+  ctx.save();ctx.globalAlpha=.055;ctx.strokeStyle=col;ctx.lineWidth=.7;
+  for(let x=0;x<w;x+=22)for(let y=0;y<h;y+=22)ctx.strokeRect(x,y,22,22);ctx.restore();
+  // Radial glow
+  const rg=ctx.createRadialGradient(w/2,h*.38,0,w/2,h*.38,w*.58);
+  rg.addColorStop(0,col+'44');rg.addColorStop(.5,col+'18');rg.addColorStop(1,'transparent');
+  ctx.fillStyle=rg;ctx.fillRect(0,0,w,h);
+  // Icon
+  ctx.save();ctx.globalAlpha=.84;const sz=Math.min(w,h)*.33;
+  ctx.font=`${sz}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.shadowColor=col;ctx.shadowBlur=sz*.44;ctx.fillText(ico||'🎮',w/2,h*.37);ctx.restore();
+  // Bottom gradient
+  const fade=ctx.createLinearGradient(0,h*.5,0,h);
+  fade.addColorStop(0,'transparent');fade.addColorStop(.35,'rgba(0,0,0,.72)');fade.addColorStop(1,'rgba(0,0,0,.97)');
+  ctx.fillStyle=fade;ctx.fillRect(0,h*.48,w,h);
+  // Title
+  const nm=(title||'').replace(/\([^)]*\)/g,'').trim();
+  ctx.save();ctx.textAlign='center';ctx.fillStyle='#fff';ctx.shadowColor='rgba(0,0,0,.95)';ctx.shadowBlur=6;
+  let fs=Math.min(w*.082,13);ctx.font=`700 ${fs}px 'Orbitron',monospace`;
+  const mW=w-16,wds=nm.split(/\s+/),lines=[];let cur='';
+  for(const wd of wds){const t=cur?cur+' '+wd:wd;if(ctx.measureText(t).width>mW&&cur){lines.push(cur);cur=wd}else cur=t}
+  if(cur)lines.push(cur);
+  const lh=fs*1.35,ty=h-lines.length*lh-9;
+  lines.forEach((l,i)=>ctx.fillText(l,w/2,ty+i*lh+lh/2));ctx.restore();
+  cvC.set(k,cv);return cv;
+}
+
+/* ── ROM LOADER CLASS ────────────────── */
+class RomLoader {
+  static async read(file,onProg=null){
+    const raw=await RomLoader._rf(file);
+    const type=RomLoader._detectArch(raw);
+    let result;
+    if(type==='ZIP') result=await RomLoader._unzip(raw,onProg);
+    else if(type==='GZ') result=await RomLoader._ungz(raw,file.name);
+    else if(type==='RAR4'||type==='RAR5') throw new Error('RAR غير مدعوم — حوّل إلى ZIP');
+    else if(type==='_7Z') throw new Error('7z غير مدعوم — حوّل إلى ZIP');
+    else result=[{data:raw,name:file.name}];
+    if(!result?.length) throw new Error('لا محتوى صالح في الأرشيف');
+    const best=RomLoader._pickBest(result);
+    if(!best) throw new Error('لا روم مدعوم داخل الأرشيف');
+    const ext='.'+best.name.split('.').pop().toLowerCase();
+    const sysId=EXT[ext]||RomLoader._detectContent(best.data)||'nes';
+    return{data:best.data,name:best.name,ext,sysId,title:best.name.replace(/\.[^.]+$/,'').replace(/[_\-]+/g,' ').trim(),size:best.data.byteLength,compressed:type!==null};
+  }
+  static _rf(f){return new Promise((ok,err)=>{const r=new FileReader();r.onload=e=>ok(e.target.result);r.onerror=()=>err(new Error('فشل القراءة: '+f.name));r.readAsArrayBuffer(f)})}
+  static _detectArch(buf){
+    const b=new Uint8Array(buf);
+    const c=(s,o=0)=>s.every((v,i)=>b[o+i]===v);
+    if(c([0x50,0x4B,0x03,0x04])) return 'ZIP';
+    if(c([0x1F,0x8B]))            return 'GZ';
+    if(c([0x52,0x61,0x72,0x21,0x1A,0x07,0x01,0x00])) return 'RAR5';
+    if(c([0x52,0x61,0x72,0x21,0x1A,0x07,0x00]))      return 'RAR4';
+    if(c([0x37,0x7A,0xBC,0xAF,0x27,0x1C]))           return '_7Z';
+    return null;
+  }
+  static async _unzip(buf,onProg){
+    const b=new Uint8Array(buf),dv=new DataView(buf);
+    let eocd=-1;for(let i=b.length-22;i>=0;i--){if(b[i]===0x50&&b[i+1]===0x4B&&b[i+2]===0x05&&b[i+3]===0x06){eocd=i;break}}
+    if(eocd<0)throw new Error('ZIP: تالف');
+    const cdo=dv.getUint32(eocd+16,true),cdc=dv.getUint16(eocd+10,true);
+    const dec=new TextDecoder('utf-8'),files=[]; let pos=cdo;
+    for(let i=0;i<cdc;i++){
+      if(dv.getUint32(pos,true)!==0x02014B50)break;
+      const flags=dv.getUint16(pos+8,true),method=dv.getUint16(pos+10,true),cSize=dv.getUint32(pos+20,true),uSize=dv.getUint32(pos+24,true),fnLen=dv.getUint16(pos+28,true),exLen=dv.getUint16(pos+30,true),cmLen=dv.getUint16(pos+32,true),lOff=dv.getUint32(pos+42,true);
+      const isUtf8=flags&0x0800;
+      const fname=(isUtf8?dec:new TextDecoder('cp437')).decode(b.slice(pos+46,pos+46+fnLen));
+      if(!fname.endsWith('/')&&uSize>0) files.push({name:fname.split('/').pop(),method,cSize,uSize,lOff});
+      pos+=46+fnLen+exLen+cmLen;
+    }
+    const results=[];
+    for(let i=0;i<files.length;i++){
+      const f=files[i];if(onProg)onProg(i/files.length,f.name);
+      const lp=f.lOff;if(dv.getUint32(lp,true)!==0x04034B50)continue;
+      const lfn=dv.getUint16(lp+26,true),lxn=dv.getUint16(lp+28,true),ds=lp+30+lfn+lxn;
+      const comp=buf.slice(ds,ds+f.cSize);
+      let data;
+      if(f.method===0) data=comp;
+      else if(f.method===8) data=await RomLoader._inflate(comp);
+      else continue;
+      results.push({name:f.name,data});
+    }
+    if(!results.length) throw new Error('ZIP فارغ أو بضغط LZMA غير مدعوم');
+    return results;
+  }
+  static async _inflate(comp){
+    if(typeof DecompressionStream==='undefined') throw new Error('المتصفح لا يدعم DecompressionStream');
+    const ds=new DecompressionStream('deflate-raw'),wr=ds.writable.getWriter(),rd=ds.readable.getReader();
+    wr.write(comp);wr.close();
+    const chunks=[]; let tl=0;
+    while(true){const{done,value}=await rd.read();if(done)break;chunks.push(value);tl+=value.length}
+    const out=new Uint8Array(tl); let off=0;
+    for(const c of chunks){out.set(c,off);off+=c.length}
+    return out.buffer;
+  }
+  static async _ungz(buf,fn){
+    if(typeof DecompressionStream==='undefined') throw new Error('DecompressionStream غير مدعوم');
+    const b=new Uint8Array(buf); let pos=10;
+    const flags=b[3];
+    if(flags&0x04){const xl=b[pos]|(b[pos+1]<<8);pos+=2+xl}
+    let origName='';
+    if(flags&0x08){while(b[pos]!==0)origName+=String.fromCharCode(b[pos++]);pos++}
+    if(!origName)origName=fn.replace(/\.gz$/i,'');
+    const ds=new DecompressionStream('gzip'),wr=ds.writable.getWriter(),rd=ds.readable.getReader();
+    wr.write(buf);wr.close();
+    const chunks=[]; let tl=0;
+    while(true){const{done,value}=await rd.read();if(done)break;chunks.push(value);tl+=value.length}
+    const out=new Uint8Array(tl); let off=0;
+    for(const c of chunks){out.set(c,off);off+=c.length}
+    return[{name:origName,data:out.buffer}];
+  }
+  static _pickBest(entries){
+    const PRI=['.nes','.smc','.sfc','.n64','.z64','.gba','.gb','.gbc','.nds','.md','.gen','.psx','.bin','.iso'];
+    const sup=entries.filter(e=>{const ext='.'+e.name.split('.').pop().toLowerCase();return !!EXT[ext]});
+    if(!sup.length)return null;
+    sup.sort((a,b)=>{const ea='.'+a.name.split('.').pop().toLowerCase(),eb='.'+b.name.split('.').pop().toLowerCase();const pa=PRI.indexOf(ea),pb=PRI.indexOf(eb);if(pa!==-1&&pb!==-1&&pa!==pb)return pa-pb;return(b.data?.byteLength||0)-(a.data?.byteLength||0)});
+    return sup[0];
+  }
+  static _detectContent(buf){
+    if(!buf)return null;const b=new Uint8Array(buf);
+    const c=(s,o=0)=>o+s.length<=b.length&&s.every((v,i)=>b[o+i]===v);
+    if(c([0x4E,0x45,0x53,0x1A]))return'nes';
+    if(c([0x80,0x37,0x12,0x40])||c([0x37,0x80,0x40,0x12]))return'n64';
+    if(buf.byteLength>0x108&&c([0xCE,0xED,0x66,0x66],0x104))return'gb';
+    if(buf.byteLength>8&&c([0x24,0xFF,0xAE,0x51],4))return'gba';
+    return null;
+  }
+  static fmtType(buf){const t=RomLoader._detectArch(buf);return{ZIP:'📦 ZIP',GZ:'🗜 GZip',RAR4:'📦 RAR',RAR5:'📦 RAR5',_7Z:'📦 7-Zip'}[t]||'🎮 ROM مباشر'}
+}
+
+/* ── INDEXEDDB ────────────────────────── */
+let DB=null;
+function openDB(){if(DB)return Promise.resolve(DB);return new Promise((ok,err)=>{const r=indexedDB.open('av3roms',1);r.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains('roms'))db.createObjectStore('roms',{keyPath:'id'})};r.onsuccess=e=>{DB=e.target.result;ok(DB)};r.onerror=e=>err(e.target.error)})}
+async function dbPut(o){const db=await openDB();return new Promise((ok,err)=>{const tx=db.transaction(['roms'],'readwrite');tx.objectStore('roms').put(o);tx.oncomplete=()=>ok();tx.onerror=e=>err(e)})}
+async function dbGet(id){const db=await openDB();return new Promise((ok,err)=>{const r=db.transaction(['roms'],'readonly').objectStore('roms').get(id);r.onsuccess=e=>ok(e.target.result);r.onerror=e=>err(e)})}
+async function dbAll(){const db=await openDB();return new Promise((ok,err)=>{const r=db.transaction(['roms'],'readonly').objectStore('roms').getAll();r.onsuccess=e=>ok(e.target.result||[]);r.onerror=e=>err(e)})}
+
+/* ── DETECT MODE ─────────────────────── */
+function detectMode(){
+  isLocal=location.hostname==='localhost'||location.hostname==='127.0.0.1';
+  const m=location.href.match(/https?:\/\/([^.]+)\.github\.io\/([^/?#]+)/);
+  if(m){isGH=true;if(!C.owner)C.owner=m[1];if(!C.repo)C.repo=m[2]}
+  const b=document.getElementById('s-mode-b'),s=document.getElementById('s-mode-s');
+  if(isLocal){b.textContent='LOCAL';s.textContent='Node.js / Python server'}
+  else if(isGH){b.textContent='GITHUB';s.textContent=C.owner+'/'+C.repo}
+  else{b.textContent='WEB';s.textContent='External hosting'}
+}
+function getRomUrl(game){
+  if(isLocal)return`/${C.folder}/${encodeURIComponent(game.file)}`;
+  if(isGH){const raw=`https://raw.githubusercontent.com/${C.owner}/${C.repo}/${C.branch||'main'}/${C.folder}/${game.file}`;return C.proxy?C.proxy+encodeURIComponent(raw):raw}
+  return`/${C.folder}/${encodeURIComponent(game.file)}`;
+}
+
+/* ── SCAN GAMES ──────────────────────── */
+async function scanGames(manual=false){
+  const btn=document.getElementById('btn-sync');btn.style.animation='logoPrism .6s linear infinite';
+  try{
+    let remote=[];
+    if(isLocal){
+      const r=await fetch('/api/games');
+      if(r.ok){const d=await r.json();remote=buildList(d.games||[])}
+      else throw new Error('Server: HTTP '+r.status);
+    } else if(isGH&&C.owner&&C.repo){
+      const url=`https://api.github.com/repos/${C.owner}/${C.repo}/contents/${C.folder}?ref=${C.branch||'main'}`;
+      const h={'Accept':'application/vnd.github.v3+json'};if(C.token)h['Authorization']='token '+C.token;
+      const r=await fetch(url,{headers:h});
+      if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.message||'GitHub: HTTP '+r.status)}
+      const d=await r.json();if(!Array.isArray(d))throw new Error('المسار ليس مجلداً');
+      remote=buildList(d.filter(f=>f.type==='file').map(f=>({file:f.name,size:f.size})));
+    } else {
+      try{const r=await fetch('/api/games');if(r.ok){const d=await r.json();remote=buildList(d.games||[])}}catch{}
+      if(!remote.length){try{const r=await fetch('./games.json');if(r.ok){const d=await r.json();if(d.games)remote=d.games.map(g=>({...g,id:g.id||g.system+'_'+g.file,ext:'.'+g.file.split('.').pop().toLowerCase(),source:'cloud'}))}}catch{}}
+    }
+    const local=await loadLocal();
+    const prev=new Set(games.filter(g=>isFav(g.id)).map(g=>g.id));
+    games=[...remote,...local.filter(l=>!remote.find(r=>r.file===l.file))];
+    prev.forEach(id=>{if(games.find(g=>g.id===id))favs.add(id)});
+    try{localStorage.setItem('av3games',JSON.stringify(remote))}catch{}
+    if(manual&&remote.length)toast('🎮 '+remote.length+' لعبة');
+    refreshAll();
+  }catch(e){
+    if(manual)toast('❌ '+e.message,4000);
+    try{const c=localStorage.getItem('av3games');if(c){const r=JSON.parse(c);const l=await loadLocal();games=[...r,...l.filter(x=>!r.find(y=>y.file===x.file))];refreshAll()}}catch{}
+  }
+  btn.style.animation='';
+}
+function buildList(arr){return arr.map(f=>{const ext=f.ext||('.'+f.file.split('.').pop().toLowerCase());const sysId=EXT[ext]||'nes';const title=f.title||(f.file.replace(/\.[^.]+$/,'').replace(/[_\-]+/g,' ').trim());return{id:sysId+'_'+f.file.replace(/[^a-zA-Z0-9]/g,'_'),title,file:f.file,system:sysId,ext,size:f.size||0,source:'cloud'}})}
+async function loadLocal(){try{const all=await dbAll();return all.map(g=>({...g,source:'local'}))}catch{return[]}}
+
+/* ── UPLOAD ──────────────────────────── */
+async function handleUpload(files){
+  const AE=['.zip','.gz','.bz2','.7z','.rar'];
+  const candidates=[...files].filter(f=>{const e='.'+f.name.split('.').pop().toLowerCase();return !!EXT[e]||AE.includes(e)});
+  if(!candidates.length){toast('⚠️ لا ملفات مدعومة');return}
+  const card=document.getElementById('import-card');card.classList.add('on');
+  let added=0,errors=0;
+  for(let i=0;i<candidates.length;i++){
+    const file=candidates[i];
+    document.getElementById('import-fn').textContent=file.name;
+    document.getElementById('import-fill').style.width=((i/candidates.length)*100)+'%';
+    document.getElementById('import-cnt').textContent=(i+1)+' / '+candidates.length;
+    try{
+      const rawBuf=await RomLoader._rf(file);
+      const fmt=RomLoader.fmtType(rawBuf);
+      document.getElementById('import-status').textContent=fmt;
+      const archType=RomLoader._detectArch(rawBuf);
+      let roms=[];
+      if(archType==='ZIP'){
+        const onP=(_,n)=>document.getElementById('import-fn').textContent='📦 '+n;
+        try{
+          const entries=await RomLoader._unzip(rawBuf,onP);
+          const supported=entries.filter(e=>{const ext='.'+e.name.split('.').pop().toLowerCase();return !!EXT[ext]});
+          if(supported.length){
+            roms=supported.map(e=>{const ext='.'+e.name.split('.').pop().toLowerCase();return{data:e.data,name:e.name,ext,sysId:EXT[ext],title:e.name.replace(/\.[^.]+$/,'').replace(/[_\-]+/g,' ').trim()}});
+          } else {
+            // Arcade ZIP — keep whole archive
+            const ext='.zip';const sysId=EXT[ext]||'fbneo';
+            roms=[{data:rawBuf,name:file.name,ext,sysId,title:file.name.replace(/\.zip$/i,'')}];
+          }
+        }catch(ze){roms=[{data:rawBuf,name:file.name,ext:'.zip',sysId:'fbneo',title:file.name.replace(/\.zip$/i,'')}]}
+      } else if(archType==='GZ'){
+        try{const entries=await RomLoader._ungz(rawBuf,file.name);if(entries.length){const e=entries[0];const ext='.'+e.name.split('.').pop().toLowerCase();const sysId=EXT[ext]||RomLoader._detectContent(e.data)||'nes';roms=[{data:e.data,name:e.name,ext,sysId,title:e.name.replace(/\.[^.]+$/,'').replace(/[_\-]+/g,' ').trim()}]}}catch{roms=[]}
+      } else if(archType==='RAR4'||archType==='RAR5'||archType==='_7Z'){
+        toast('⚠️ '+file.name+': '+{RAR4:'RAR',RAR5:'RAR5',_7Z:'7z'}[archType]+' غير مدعوم — حوّل إلى ZIP',4000);errors++;continue;
+      } else {
+        const ext='.'+file.name.split('.').pop().toLowerCase();
+        const sysId=EXT[ext]||RomLoader._detectContent(rawBuf);
+        if(!sysId){toast('⚠️ '+file.name+': صيغة غير معروفة');errors++;continue}
+        roms=[{data:rawBuf,name:file.name,ext,sysId,title:file.name.replace(/\.[^.]+$/,'').replace(/[_\-]+/g,' ').trim()}];
+      }
+      for(const rom of roms){
+        const id=rom.sysId+'_'+rom.name.replace(/[^a-zA-Z0-9]/g,'_');
+        await dbPut({id,title:rom.title,file:rom.name,system:rom.sysId,ext:rom.ext,size:rom.data.byteLength,source:'local',data:rom.data,added:Date.now()});
+        added++;
+      }
+    }catch(e){console.error(file.name,e);toast('❌ '+file.name+': '+e.message,4000);errors++}
+  }
+  document.getElementById('import-fill').style.width='100%';
+  document.getElementById('import-status').textContent=added?'✅ أُضيفت '+added:'❌ لا شيء';
+  await sl(800);card.classList.remove('on');
+  if(added){PS.uploads+=added;addXP(added*5,'رفع ألعاب');await scanGames(false);renderUpload();toast('✅ أُضيفت '+added+(errors?' · ❌ '+errors:''));}
+  else toast('⚠️ لم تُضف أي لعبة'+(errors?' ('+errors+' خطأ)':''));
+}
+
+/* ── RENDER ──────────────────────────── */
+function refreshAll(){
+  const n=games.length,sys=new Set(games.map(g=>g.system)).size;
+  ['h-gn','hero-gn'].forEach(id=>document.getElementById(id).textContent=n);
+  document.getElementById('hero-sys').textContent=sys;
+  document.getElementById('lib-badge').textContent=n;
+  document.getElementById('fav-badge').textContent=favs.size;
+  document.getElementById('fav-badge').classList.toggle('v',favs.size>0);
+  renderHome();renderSystems();renderLB();renderAch();renderUpload();
+}
+function buildPills(cid,list,active,fn){
+  const el=document.getElementById(cid);if(!el)return;
+  const sys={};list.forEach(g=>{if(!sys[g.system])sys[g.system]=0;sys[g.system]++});
+  let h=`<div class="pill ${active==='all'?'on':''}" onclick="${fn}('all',this)">🎮 الكل (${list.length})</div>`;
+  Object.entries(sys).sort((a,b)=>b[1]-a[1]).forEach(([sid,cnt])=>{
+    const s=g2s(sid);
+    h+=`<div class="pill ${active===sid?'on':''}" onclick="${fn}('${sid}',this)">${s.ico} ${s.n} (${cnt})</div>`;
+  });
+  el.innerHTML=h;
+}
+function renderHome(){
+  buildPills('home-pills',games,hFilter,'setHF');
+  const list=hFilter==='all'?games:games.filter(g=>g.system===hFilter);
+  document.getElementById('home-cnt').textContent=list.length;
+  // Featured
+  const featEl=document.getElementById('feat-row');
+  const feat=list.slice(0,6);
+  if(feat.length){
+    featEl.innerHTML=feat.map(g=>{const s=g2s(g.system);return`<div class="feat-card" style="--fc:${s.col}" id="fc-${g.id}" onclick="openGamePage('${g.id}')"><div class="feat-bg"></div><img class="feat-art" id="fca-${g.id}" alt="" crossorigin="anonymous" style="display:none"><div class="feat-ov"><div class="feat-sys">${s.n} · ${s.f}</div><div class="feat-title">${esc(g.title)}</div><div class="feat-play">▶ العب الآن</div></div></div>`}).join('');
+    feat.forEach(g=>{const s=g2s(g.system);getArt(g.title,g.system).then(u=>{if(u){const im=document.getElementById('fca-'+g.id);if(im){im.onload=()=>im.style.display='block';im.src=u}}})});
+  }
+  renderGrid('home-grid',list);
+}
+function setHF(f,btn){hFilter=f;document.querySelectorAll('#home-pills .pill').forEach(b=>b.classList.remove('on'));btn?.classList.add('on');const list=f==='all'?games:games.filter(g=>g.system===f);document.getElementById('home-cnt').textContent=list.length;renderGrid('home-grid',list)}
+
+function renderLibrary(){
+  buildPills('lib-pills',games,lFilter,'setLF');
+  const list=lFilter==='all'?games:games.filter(g=>g.system===lFilter);
+  document.getElementById('lib-cnt').textContent=list.length;
+  renderGrid('lib-grid',list);
+}
+function setLF(f,btn){lFilter=f;document.querySelectorAll('#lib-pills .pill').forEach(b=>b.classList.remove('on'));btn?.classList.add('on');renderGrid('lib-grid',f==='all'?games:games.filter(g=>g.system===f))}
+
+function renderSystems(){
+  const sys={};games.forEach(g=>{if(!sys[g.system])sys[g.system]=0;sys[g.system]++});
+  document.getElementById('sys-grid').innerHTML=Object.entries(sys).map(([sid,cnt])=>{
+    const s=g2s(sid);return`<div class="sys-card" style="--sc:${s.col}" onclick="setLF('${sid}',null);goNav('library')"><div class="sys-ico">${s.ico}</div><div class="sys-info"><div class="sys-name">${s.n}</div><div class="sys-full">${s.f}</div></div><div style="text-align:left;display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span style="font-family:var(--orb);font-size:10px;color:${s.col}">${cnt}</span><span class="perf-badge ${PERF_C[s.p]}">${PERF[s.p]}</span></div></div>`;
+  }).join('');
+}
+
+function renderFav(){
+  const list=games.filter(g=>isFav(g.id));
+  document.getElementById('fav-badge').textContent=list.length;
+  renderGrid('fav-grid',list);
+}
+
+async function renderUpload(){
+  const local=await loadLocal();
+  document.getElementById('upload-cnt').textContent=local.length;
+  renderGrid('upload-grid',local);
+}
+
+function renderLB(){
+  const sorted=Object.entries(scores).filter(([,v])=>v.best).sort((a,b)=>b[1].best-a[1].best).slice(0,20);
+  const el=document.getElementById('lb-list');
+  if(!sorted.length){el.innerHTML='<div class="empty-st"><div class="empty-ico">🏆</div><div class="empty-h">لا توجد نقاط</div><div class="empty-p">العب وسجّل نقطتك من القائمة السريعة</div></div>';return}
+  el.innerHTML=sorted.map(([id,v],i)=>{const game=games.find(g=>g.id===id)||{id,title:id,system:'nes'};const s=g2s(game.system);return`<div class="lb-row" onclick="openGamePage('${id}')"><div class="lb-rank ${i<3?'r'+(i+1):''}">${i<3?['🥇','🥈','🥉'][i]:i+1}</div><div class="lb-thumb"><canvas id="lbc-${id}" width="44" height="44"></canvas></div><div class="lb-info"><div class="lb-name">${esc(game.title)}</div><div class="lb-sys">${s.n}</div></div><div class="lb-score">${v.best.toLocaleString()}</div></div>`}).join('');
+  sorted.forEach(([id])=>{const g=games.find(x=>x.id===id)||{system:'nes',title:id};const s=g2s(g.system);const cv=document.getElementById('lbc-'+id);if(cv)cv.getContext('2d').drawImage(genCover(g.title,s.col,s.ico,44,44),0,0)});
+}
+
+function renderAch(){
+  document.getElementById('ach-grid').innerHTML=ACHS.map(a=>{const d=achDone.has(a.id);return`<div class="ach-card ${d?'done':''}"><div class="ach-icon">${a.ico}</div><div><div class="ach-name">${d?a.n:'???'}</div><div class="ach-desc">${d?a.desc:'أكمل المهمة لكشف هذا الإنجاز'}</div>${d?`<div class="ach-ok">✅ مكتسب${a.xp?' · +'+a.xp+' XP':''}</div>`:'<div style="font-size:10px;color:var(--tx3);margin-top:2px">🔒 مقفل</div>'}</div></div>`}).join('');
+  document.getElementById('ach-cnt').textContent=achDone.size+'/'+ACHS.length;
+}
+
+/* ── GAME CARD ────────────────────────── */
+function renderGrid(cid,list){
+  const el=document.getElementById(cid);if(!el)return;
+  if(!list.length){el.innerHTML='<div class="empty-st"><div class="empty-ico">🕹️</div><div class="empty-h">لا توجد ألعاب</div><div class="empty-p">أضف ملفات الروم واضغط ↻</div></div>';return}
+  el.innerHTML=list.map((g,i)=>buildCard(g,i)).join('');
+  requestAnimationFrame(()=>list.forEach(g=>activateCard(g)));
+}
+function buildCard(g,i){
+  const s=g2s(g.system);const hs=scores[g.id]?.best||null;const pc=plays[g.id]||0;
+  return`<div class="gcard" style="--gc:${s.col};animation-delay:${Math.min(i,30)*10}ms" id="gcard-${g.id}" data-p="${pc>0?1:0}" onclick="openGamePage('${g.id}')">
+    <div class="card-art">
+      <canvas id="cv-${g.id}" width="200" height="280"></canvas>
+      <img class="ra" id="art-${g.id}" alt="" crossorigin="anonymous" loading="lazy">
+      <div class="card-sys-tag">${s.n}</div>
+      <button class="card-fav ${isFav(g.id)?'on':''}" id="fav-${g.id}" onclick="toggleFav('${g.id}');event.stopPropagation()">${isFav(g.id)?'❤':'♡'}</button>
+      <div class="card-played" id="cp-${g.id}"></div>
+      <div class="card-ov"><div class="card-ov-btn">▶</div><div class="card-ov-label">PLAY</div></div>
+    </div>
+    <div class="card-info">
+      <div class="card-title">${esc(g.title)}</div>
+      <div class="card-sub"><span class="card-sys">${s.n}</span><span class="card-hs">${hs?'🏆 '+hs.toLocaleString():''}</span><span class="card-sz">${fmtSz(g.size)}</span></div>
+    </div>
+  </div>`;
+}
+function activateCard(g){
+  const s=g2s(g.system);
+  const cv=document.getElementById('cv-'+g.id);
+  const im=document.getElementById('art-'+g.id);
+  if(cv)cv.getContext('2d').drawImage(genCover(g.title,s.col,s.ico,200,280),0,0);
+  if(!C.art||!im)return;
+  getArt(g.title,g.system).then(u=>{if(u&&im){im.onload=()=>im.classList.add('ok');im.src=u}});
+}
+
+/* ── GAME PAGE ────────────────────────── */
+function openGamePage(id){
+  const game=games.find(g=>g.id===id);if(!game)return;
+  currentPageGame=game;const s=g2s(game.system);
+  // Hide main, show game page
+  document.getElementById('app').style.display='none';
+  document.getElementById('game-page').classList.add('on');
+  // Hero
+  const bcv=document.getElementById('gp-bg-cv'),bart=document.getElementById('gp-bg-art');
+  bcv.width=1500;bcv.height=280;bcv.getContext('2d').drawImage(genCover(game.title,s.col,s.ico,1500,280),0,0);
+  bart.style.display='none';
+  getArt(game.title,game.system).then(u=>{if(u&&bart){bart.onload=()=>bart.style.display='block';bart.src=u}});
+  // Cover
+  const cv=document.getElementById('gp-cv'),art=document.getElementById('gp-art');
+  cv.width=130;cv.height=178;cv.getContext('2d').drawImage(genCover(game.title,s.col,s.ico,130,178),0,0);
+  art.style.display='none';
+  getArt(game.title,game.system).then(u=>{if(u&&art){art.style.position='absolute';art.style.inset='0';art.style.width='100%';art.style.height='100%';art.style.objectFit='cover';art.onload=()=>{art.style.display='block';cv.style.display='none'};art.src=u}});
+  // Info
+  document.getElementById('gp-sys-lbl').innerHTML=`<span style="background:${s.col};width:10px;height:10px;border-radius:50%;display:inline-block"></span> ${s.ico} ${s.f}`;
+  document.getElementById('gp-title').textContent=game.title;
+  const tags=[{cls:'sys',t:s.n},{cls:'',t:s.f},{cls:'',t:s.yr||''},{cls:'',t:PERF[s.p]||''},...(s.genres||[]).map(g=>({cls:'',t:g}))].filter(x=>x.t);
+  document.getElementById('gp-tags').innerHTML=tags.map(t=>`<span class="gp-tag ${t.cls}">${esc(t.t)}</span>`).join('');
+  // Desc (Arabic)
+  document.getElementById('gp-desc').textContent=game.desc||s.desc||`${game.title} — ${s.f}. لعبة كلاسيكية مميزة من أنظمة الألعاب الأسطورية.`;
+  // Stats
+  document.getElementById('gp-plays').textContent=plays[game.id]||0;
+  document.getElementById('gp-hs').textContent=scores[game.id]?.best?.toLocaleString()||'—';
+  document.getElementById('gp-xp-earned').textContent=scores[game.id]?.xp||0;
+  // Stars
+  const myR=ratings[game.id]||0;
+  document.querySelectorAll('.gp-star').forEach(star=>{star.classList.toggle('on',+star.dataset.v<=myR);star.onclick=()=>rateGame(game.id,+star.dataset.v)});
+  document.getElementById('gp-rating-avg').textContent=myR?'⭐'.repeat(myR):'—';
+  document.getElementById('gp-rating-lbl').textContent=myR?['سيء','مقبول','جيد','رائع','ممتاز'][myR-1]:'انقر للتقييم';
+  // Fav
+  document.getElementById('gp-fav-btn').textContent=isFav(game.id)?'❤️ في المفضلة':'🤍 إضافة للمفضلة';
+  // Sidebar info
+  document.getElementById('gpi-sys').textContent=s.f;
+  document.getElementById('gpi-yr').textContent=s.yr||game.year||'—';
+  document.getElementById('gpi-genre').textContent=(s.genres||[]).join(', ')||'—';
+  document.getElementById('gpi-size').textContent=fmtSz(game.size)||'—';
+  document.getElementById('gpi-src').textContent=game.source==='local'?'📱 محلي':game.source==='cloud'?'☁️ سحابي':'🔗 رابط';
+  document.getElementById('gpi-perf').textContent=PERF[s.p]||'—';
+  window.scrollTo(0,0);
+}
+function closeGamePage(){
+  document.getElementById('game-page').classList.remove('on');
+  document.getElementById('app').style.display='flex';
+  currentPageGame=null;
+}
+function playCurrentGame(){if(currentPageGame)play(currentPageGame.id)}
+function toggleFavPage(){if(currentPageGame){toggleFav(currentPageGame.id);document.getElementById('gp-fav-btn').textContent=isFav(currentPageGame.id)?'❤️ في المفضلة':'🤍 إضافة للمفضلة'}}
+function rateGame(id,v){
+  ratings[id]=v;PS.ratings=Object.keys(ratings).length;
+  try{localStorage.setItem('av3rt',JSON.stringify(ratings))}catch{}
+  document.querySelectorAll('.gp-star').forEach(s=>s.classList.toggle('on',+s.dataset.v<=v));
+  document.getElementById('gp-rating-avg').textContent='⭐'.repeat(v);
+  document.getElementById('gp-rating-lbl').textContent=['سيء','مقبول','جيد','رائع','ممتاز'][v-1];
+  addXP(5,'تقييم لعبة');checkAch();toast('⭐ شكراً على تقييمك!');
+}
+
+/* ── FAVORITES ────────────────────────── */
+function toggleFav(id){
+  favs.has(id)?favs.delete(id):favs.add(id);saveFavs();
+  document.querySelectorAll(`#fav-${id}`).forEach(b=>{b.classList.toggle('on',favs.has(id));b.textContent=favs.has(id)?'❤':'♡'});
+  document.getElementById('fav-badge').textContent=favs.size;
+  document.getElementById('fav-badge').classList.toggle('v',favs.size>0);
+  toast(favs.has(id)?'❤ أُضيف':'💔 أُزيل');checkAch();
+}
+
+/* ── PLAY ─────────────────────────────── */
+async function play(id){
+  const game=games.find(g=>g.id===id);if(!game){toast('❌ اللعبة غير موجودة');return}
+  const s=g2s(game.system);activeGame=game;
+  if(s.p>=3&&document.getElementById('t-perf').classList.contains('on')){
+    if(!confirm(`⚠️ ${s.n} — ${PERF[s.p]}\n${(s.desc||'').substring(0,80)}\nمتابعة؟`))return;
+  }
+  // Apply system theme to emulator BEFORE showing
+  applyEmuSysTheme(game.system);
+  document.getElementById('emu').classList.add('on');document.body.style.overflow='hidden';
+  document.getElementById('emu-load').classList.remove('done');
+  document.getElementById('emu-err').classList.remove('on');
+  document.getElementById('emu-t').textContent=game.title;
+  document.getElementById('emu-s').textContent=s.f;
+  document.getElementById('l-title').textContent=game.title;
+  document.getElementById('l-sys').textContent=s.n+' · '+s.f;
+  document.getElementById('emu-as').className='emu-as'+(document.getElementById('t-as').classList.contains('on')?' on':'');
+  // Loading poster
+  const lc=document.getElementById('l-cvs'),li=document.getElementById('l-img');
+  lc.width=98;lc.height=136;lc.getContext('2d').drawImage(genCover(game.title,s.col,s.ico,98,136),0,0);
+  li.style.display='none';lc.style.display='block';
+  getArt(game.title,game.system).then(u=>{if(u&&li){li.onload=()=>{li.style.display='block';lc.style.display='none'};li.src=u}});
+  // Track play
+  plays[game.id]=(plays[game.id]||0)+1;
+  try{localStorage.setItem('av3plays',JSON.stringify(plays))}catch{}
+  const uniqSys=new Set(Object.keys(plays).map(k=>k.split('_')[0])).size;
+  PS.played++;PS.uniq=new Set(Object.keys(plays)).size;PS.sysCnt=uniqSys;
+  addXP(3,'تشغيل لعبة');checkAch();
+  // Update played indicator
+  const dot=document.getElementById('cp-'+game.id);if(dot)dot.style.display='block';
+  const card=document.getElementById('gcard-'+game.id);if(card)card.dataset.p='1';
+  // Fetch ROM
+  let romData;
+  if(game.source==='local'){
+    document.getElementById('l-st').textContent='⏳ تحميل من الجهاز...';
+    const dbGame=await dbGet(game.id);
+    if(!dbGame?.data){showEmuErr(['الملف غير موجود في قاعدة البيانات المحلية','حاول رفع الملف مجدداً']);return}
+    romData=dbGame.data;
+  } else {
+    const romUrl=getRomUrl(game);
+    document.getElementById('l-st').textContent='⏳ جاري التحميل من السحابة...';
+    try{
+      const resp=await fetch(romUrl);
+      if(!resp.ok)throw new Error('HTTP '+resp.status+' — '+game.file);
+      document.getElementById('l-st').textContent='⏳ جاري المعالجة...';
+      const raw=await resp.arrayBuffer();
+      const archType=RomLoader._detectArch(raw);
+      if(archType==='ZIP'){
+        document.getElementById('l-st').textContent='📦 استخراج من ZIP...';
+        try{const entries=await RomLoader._unzip(raw);const best=RomLoader._pickBest(entries);if(best){romData=best.data;document.getElementById('l-st').textContent='✅ تم الاستخراج: '+best.name}else{romData=raw}}catch{romData=raw}
+      } else if(archType==='GZ'){
+        document.getElementById('l-st').textContent='🗜 فك ضغط GZip...';
+        try{const entries=await RomLoader._ungz(raw,game.file);romData=entries[0]?.data||raw}catch{romData=raw}
+      } else {
+        romData=raw;
+        document.getElementById('l-st').textContent='✅ ROM جاهز!';
+      }
+    }catch(e){
+      document.getElementById('emu-load').classList.add('done');
+      showEmuErr(['• الملف: '+game.file,'• تأكد من وجوده في مجلد '+C.folder+'/',
+        ...(s.bio?['• يحتاج BIOS: '+s.bio]:[]),'• CORS: أضف Proxy في الإعدادات','• الخطأ: '+e.message]);
+      return;
+    }
+  }
+  document.getElementById('l-st').textContent='✅ جاهز للتشغيل!';await sl(200);
+  freeBlobUrls();
+  const rb=new Blob([romData],{type:'application/octet-stream'});
+  const ru=URL.createObjectURL(rb);blobUrls.push(ru);
+  const core=C.cores[game.system]||s.c;
+  const biosUrl=C.bios[game.system]||'';
+  const html=buildEmuHTML(ru,game.title,core,s.col,game.id,biosUrl);
+  const hu=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));blobUrls.push(hu);
+  applyShader(C.shader);
+  document.getElementById('gp-ui').classList.toggle('on',C.gpUi);
+  const fr=document.getElementById('emu-frame');
+  fr.onload=()=>{setTimeout(()=>document.getElementById('emu-load').classList.add('done'),3500);if(document.getElementById('t-as').classList.contains('on'))startAS()};
+  fr.src=hu;
+}
+
+function buildEmuHTML(romUrl,name,core,col,gid,bio){
+  const sn=name.replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/\$/g,'\\$');
+  return`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;background:#000;overflow:hidden}#e{width:100%;height:100%}canvas{image-rendering:pixelated;image-rendering:crisp-edges}</style></head><body><div id="e"></div>
+<script>
+window.EJS_player='#e';window.EJS_gameName=\`${sn}\`;window.EJS_biosUrl='${bio}';window.EJS_gameUrl='${romUrl}';window.EJS_core='${core}';window.EJS_pathtodata='${C.ejs}';window.EJS_startOnLoaded=true;window.EJS_color='${col}';window.EJS_backgroundColor='#000000';window.EJS_defaultOptions={'save-state-slot':'1','save-state-location':'keep in browser'};window.EJS_Buttons={playPause:1,restart:1,mute:1,settings:1,fullscreen:1,saveState:1,loadState:1,gamepad:1,volume:1,saveSavFiles:1,loadSavFiles:1,screenshot:1,cheat:1};
+window.EJS_onGameStart=()=>parent.postMessage({t:'ok',id:'${gid}'},'*');window.EJS_onSaveState=()=>parent.postMessage({t:'saved',id:'${gid}'},'*');window.EJS_onLoadState=()=>parent.postMessage({t:'loaded',id:'${gid}'},'*');window.EJS_onLoadError=e=>parent.postMessage({t:'err',msg:String(e)},'*');
+window.addEventListener('message',e=>{if(!e.data)return;try{if(e.data.t==='save')EJS_emulator.gameManager.saveState(e.data.s||0);if(e.data.t==='load')EJS_emulator.gameManager.loadState(e.data.s||0)}catch{}});
+<\/script><script src="${C.ejs}loader.js"><\/script></body></html>`;
+}
+
+window.addEventListener('message',e=>{
+  if(!e.data?.t)return;const{t,id,msg}=e.data;
+  if(t==='ok')document.getElementById('emu-load').classList.add('done');
+  if(t==='err'){document.getElementById('emu-load').classList.add('done');const s=activeGame?g2s(activeGame.system):null;showEmuErr(['فشل تحميل المحاكي',..( s?.bio?['تأكد من BIOS: '+s.bio]:[]),...(s?.cores?.length>1?['جرب Core آخر في الإعدادات']:[]),'الخطأ: '+msg].filter(Boolean))}
+  if(t==='saved'){const b=document.getElementById('btn-save');b.textContent='✅';b.classList.add('lit');setTimeout(()=>{b.textContent='💾 حفظ';b.classList.remove('lit')},1800)}
+  if(t==='loaded')toast('✅ تم التحميل');
+});
+
+function showEmuErr(tips){document.getElementById('emu-err').classList.add('on');document.getElementById('err-list').innerHTML=tips.map(t=>`<li>${esc(t)}</li>`).join('')}
+function closeErr(){document.getElementById('emu-err').classList.remove('on')}
+function exitEmu(){
+  if(!confirm('خروج؟'))return;trigSave();
+  setTimeout(()=>{
+    clearAS();const fr=document.getElementById('emu-frame');fr.src='about:blank';
+    document.getElementById('emu').classList.remove('on');document.body.style.overflow='';
+    freeBlobUrls();activeGame=null;document.getElementById('qp').classList.remove('open');
+    document.getElementById('emu-err').classList.remove('on');document.getElementById('emu-load').classList.remove('done');
+    document.getElementById('score-inp').style.display='none';
+    document.documentElement.dataset.sysTheme='default';
+    if(window.gc)window.gc();
+  },500);
+}
+function freeBlobUrls(){blobUrls.forEach(u=>URL.revokeObjectURL(u));blobUrls=[]}
+
+/* ── SAVE/LOAD/FS ─────────────────────── */
+function trigSave(){try{document.getElementById('emu-frame').contentWindow?.postMessage({t:'save',s:saveSlot-1},'*')}catch{}}
+function doSave(){trigSave();toast('💾 Slot '+saveSlot)}
+function doLoad(){try{document.getElementById('emu-frame').contentWindow?.postMessage({t:'load',s:saveSlot-1},'*')}catch{}toast('📂 Slot '+saveSlot)}
+function doFS(){const b=document.getElementById('emu-body');document.fullscreenElement?document.exitFullscreen?.():b.requestFullscreen?.().catch(()=>{})}
+function startAS(){clearAS();if(!document.getElementById('t-as').classList.contains('on'))return;asTimer=setInterval(()=>{if(document.getElementById('emu').classList.contains('on'))trigSave()},60000)}
+function clearAS(){if(asTimer){clearInterval(asTimer);asTimer=null}}
+function toggleQP(){document.getElementById('qp').classList.toggle('open')}
+function toggleScoreInp(){const el=document.getElementById('score-inp');el.style.display=el.style.display==='block'?'none':'block';if(el.style.display==='block')document.getElementById('score-v').focus()}
+function submitScore(){
+  const v=parseInt(document.getElementById('score-v').value);
+  if(!v||!activeGame)return;
+  const id=activeGame.id;
+  if(!scores[id])scores[id]={best:0,xp:0};
+  if(v>scores[id].best){scores[id].best=v;addXP(10,'نقطة عالية');notify('🏆 نقطة جديدة!','حصلت على '+v.toLocaleString(),2800)}
+  scores[id].xp=(scores[id].xp||0)+5;PS.scores++;saveScores();renderLB();checkAch();toggleScoreInp();toast('✅ '+v.toLocaleString());
+}
+
+/* ── SHADER ──────────────────────────── */
+function setShader(id){
+  C.shader=id;save();applyShader(id);
+  document.querySelectorAll('.sh-opt,.qp-sh').forEach(b=>b.classList.toggle('on',b.dataset.s===id));
+}
+function applyShader(id){const b=document.getElementById('emu-body');b.className='';if(id&&id!=='none')b.classList.add('crt-'+id)}
+
+/* ── GAMEPAD UI ──────────────────────── */
+function toggleGpUi(){C.gpUi=!C.gpUi;document.getElementById('gp-ui').classList.toggle('on',C.gpUi);document.getElementById('t-gp').classList.toggle('on',C.gpUi);save();toast(C.gpUi?'🕹 مفعّلة':'🕹 مخفية')}
+function gpD(el){el.classList.add('p');const k=el.dataset.k;if(k)try{document.getElementById('emu-frame').contentWindow?.dispatchEvent(new KeyboardEvent('keydown',{key:k,bubbles:true,cancelable:true}))}catch{}}
+function gpU(el){el.classList.remove('p');const k=el.dataset.k;if(k)try{document.getElementById('emu-frame').contentWindow?.dispatchEvent(new KeyboardEvent('keyup',{key:k,bubbles:true,cancelable:true}))}catch{}}
+
+/* ── ART TOGGLE ──────────────────────── */
+function toggleArt(){C.art=!C.art;document.getElementById('t-art').classList.toggle('on',C.art);artCache.clear();save();refreshAll();toast(C.art?'🖼 مفعّلة':'🖼 مخفية')}
+
+/* ── SEARCH ──────────────────────────── */
+function onSearch(q){
+  const ql=q.toLowerCase().trim();
+  if(!ql){goNav('home');return}
+  goNav('library');
+  const res=games.filter(g=>g.title.toLowerCase().includes(ql)||(g2s(g.system).n||'').toLowerCase().includes(ql));
+  document.getElementById('lib-cnt').textContent=res.length+' نتيجة';
+  renderGrid('lib-grid',res);
+}
+
+/* ── NAV ──────────────────────────────── */
+function goNav(id){
+  if(document.getElementById('game-page').classList.contains('on'))closeGamePage();
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('scr-'+id)?.classList.add('on');
+  document.getElementById('tab-'+id)?.classList.add('on');
+  if(id!=='home')document.getElementById('srch').value='';
+  if(id==='library')renderLibrary();if(id==='systems')renderSystems();
+  if(id==='favorites')renderFav();if(id==='leaderboard')renderLB();
+  if(id==='achievements')renderAch();if(id==='upload')renderUpload();
+  window.scrollTo(0,0);
+}
+
+/* ── SETTINGS ─────────────────────────── */
+function openSettings(){document.getElementById('settings').classList.add('open');buildStgUI()}
+function closeSettings(){document.getElementById('settings').classList.remove('open')}
+function buildStgUI(){
+  // Theme picker
+  const tp=document.getElementById('theme-picker');
+  tp.innerHTML=THEMES.map(t=>`<div class="theme-opt ${C.theme===t.id?'on':''}" data-t="${t.id}" onclick="applyTheme('${t.id}')" style="background:${t.bg}"><div class="theme-swatch"><div class="theme-dot" style="background:${t.c1}"></div><div class="theme-dot" style="background:${t.c2}"></div><div class="theme-dot" style="background:${t.c3}"></div></div><div class="theme-lbl">${t.n}</div></div>`).join('');
+  // Shaders
+  const sg=document.getElementById('shader-grid');
+  sg.innerHTML=SHADERS.map(s=>`<div class="sh-opt ${C.shader===s.id?'on':''}" data-s="${s.id}" onclick="setShader('${s.id}')"><div class="si">${s.ico}</div><div class="sl">${s.l}</div></div>`).join('');
+  // QP Shaders
+  document.getElementById('qp-shaders').innerHTML=SHADERS.map(s=>`<div class="qp-sh ${C.shader===s.id?'on':''}" data-s="${s.id}" onclick="setShader('${s.id}')">${s.l}</div>`).join('');
+  // Cores
+  const cl=document.getElementById('core-list');
+  cl.innerHTML=Object.entries(SYS).filter(([,s])=>s.cores.length>1).map(([sid,s])=>`<div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--orb);font-size:10px;color:var(--tx2);width:42px;flex-shrink:0">${s.n}</span><select class="stg-sel" style="flex:1" onchange="C.cores['${sid}']=this.value;save()">${s.cores.map(c=>`<option value="${c}" ${(C.cores[sid]||s.c)===c?'selected':''}>${c}</option>`).join('')}</select></div>`).join('');
+  // BIOS
+  const bl=document.getElementById('bios-list');
+  const bn=Object.entries(SYS).filter(([,s])=>s.bio);
+  bl.innerHTML=bn.length?bn.map(([sid,s])=>`<div class="stg-row" style="cursor:default"><div class="stg-ico">${s.ico}</div><div class="stg-inf"><div class="stg-t">${s.n} BIOS</div><div class="stg-s">${s.bio}</div></div></div><div class="stg-inp-row"><input class="stg-inp" placeholder="URL أو مسار" value="${C.bios[sid]||''}" onchange="C.bios['${sid}']=this.value;save()"></div>`).join(''):'<div class="stg-row" style="cursor:default"><div class="stg-ico">✅</div><div class="stg-inf"><div class="stg-t">لا BIOS مطلوب حالياً</div></div></div>';
+  updateRepoLbl();
+}
+function updateRepoLbl(){const o=document.getElementById('s-owner')?.value||C.owner,r=document.getElementById('s-repo')?.value||C.repo;const el=document.getElementById('s-repo-lbl');if(el)el.textContent=o&&r?o+'/'+r:'لم يتم التحديد'}
+function checkWGL(){try{const cv=document.createElement('canvas');const gl=cv.getContext('webgl2')||cv.getContext('webgl');const el=document.getElementById('s-webgl');if(!gl){el.textContent='❌ غير مدعوم';el.style.color='var(--err)';return}const v=cv.getContext('webgl2')?'WebGL 2.0':'WebGL 1.0';el.textContent='✅ '+v+' — '+(gl.getParameter(gl.RENDERER)||'').substring(0,40);el.style.color='var(--ok)'}catch(e){document.getElementById('s-webgl').textContent='❌ '+e.message}}
+function resetProgress(){if(!confirm('إعادة ضبط XP والإنجازات؟'))return;XP=0;achDone=new Set();PS={played:0,uniq:0,favs:0,scores:0,ratings:0,uploads:0,streak:0,sysCnt:0,xp:0};saveProgress();refreshAll();renderAch();toast('⚠️ تم إعادة الضبط')}
+
+/* ── GAMEPAD HARDWARE ───────────────── */
+const gpbar=document.getElementById('gp-bar');
+window.addEventListener('gamepadconnected',e=>{gpbar.textContent='🎮 '+e.gamepad.id.substring(0,28);gpbar.classList.add('on');toast('🎮 ذراع متصل');setTimeout(()=>gpbar.classList.remove('on'),4000)});
+window.addEventListener('gamepaddisconnected',()=>{gpbar.classList.remove('on');toast('🔌 ذراع منفصل')});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(document.getElementById('emu').classList.contains('on')){exitEmu();return}if(document.getElementById('settings').classList.contains('open')){closeSettings();return}if(document.getElementById('game-page').classList.contains('on')){closeGamePage();return}}});
+
+/* ── DRAG & DROP ─────────────────────── */
+const uz=document.getElementById('upload-zone');
+uz.addEventListener('dragover',e=>{e.preventDefault();uz.classList.add('drag')});
+uz.addEventListener('dragleave',()=>uz.classList.remove('drag'));
+uz.addEventListener('drop',e=>{e.preventDefault();uz.classList.remove('drag');handleUpload([...e.dataTransfer.files])});
+document.getElementById('file-inp').addEventListener('change',e=>{handleUpload([...e.target.files]);e.target.value=''});
+// Global drop
+document.addEventListener('dragover',e=>{if(!e.target.closest('#upload-zone'))e.preventDefault()});
+document.addEventListener('drop',e=>{if(e.target.closest('#upload-zone'))return;e.preventDefault();const f=[...e.dataTransfer.files];if(f.length)handleUpload(f)});
+
+/* ── INIT ─────────────────────────────── */
+(async()=>{
+  const fill=document.getElementById('sl-fill'),stxt=document.getElementById('sl-txt');
+  // Load config
+  try{const c=JSON.parse(localStorage.getItem('av3cfg')||'{}');Object.keys(C).forEach(k=>{if(c[k]!==undefined)C[k]=c[k]})}catch{}
+  // Load progress
+  try{const p=JSON.parse(localStorage.getItem('av3prog')||'{}');if(p.xp)XP=p.xp;if(p.ach)achDone=new Set(p.ach);if(p.ps)Object.assign(PS,p.ps)}catch{}
+  // Load data
+  try{favs=new Set(JSON.parse(localStorage.getItem('av3fav')||'[]'))}catch{}
+  try{scores=JSON.parse(localStorage.getItem('av3sc')||'{}')}catch{}
+  try{ratings=JSON.parse(localStorage.getItem('av3rt')||'{}')}catch{}
+  try{plays=JSON.parse(localStorage.getItem('av3plays')||'{}')}catch{}
+
+  fill.style.width='15%';stxt.textContent='LOADING CONFIG...';
+
+  // Apply theme
+  themeIdx=THEMES.findIndex(t=>t.id===C.theme)||0;
+  applyTheme(C.theme||'void');
+  applyShader(C.shader||'none');
+
+  // Apply toggles
+  document.getElementById('t-art').classList.toggle('on',C.art);
+  document.getElementById('t-gp').classList.toggle('on',C.gpUi);
+
+  // Populate settings inputs
+  document.getElementById('s-ejs').value=C.ejs;
+  if(C.proxy)document.getElementById('s-proxy').value=C.proxy;
+  document.getElementById('s-folder').value=C.folder||'roms';
+  if(C.owner)document.getElementById('s-owner').value=C.owner;
+  if(C.repo)document.getElementById('s-repo').value=C.repo;
+  if(C.token)document.getElementById('s-token').value=C.token;
+
+  // QP Slots
+  const qs=document.getElementById('qp-slots');
+  [1,2,3,4].forEach(i=>{const b=document.createElement('button');b.className='qp-slot'+(i===1?' on':'');b.textContent='S'+i;b.onclick=()=>{saveSlot=i;document.querySelectorAll('.qp-slot').forEach(x=>x.classList.remove('on'));b.classList.add('on')};qs.appendChild(b)});
+
+  fill.style.width='30%';stxt.textContent='DETECTING MODE...';
+  detectMode();
+
+  fill.style.width='50%';stxt.textContent='LOADING CACHE...';
+  try{const c=localStorage.getItem('av3games');if(c)games=JSON.parse(c)}catch{}
+  const local=await loadLocal();
+  games=[...games,...local.filter(l=>!games.find(r=>r.file===l.file))];
+  if(games.length)refreshAll();
+
+  fill.style.width='75%';stxt.textContent='SCANNING ROMS...';
+  await scanGames(false);
+
+  fill.style.width='92%';stxt.textContent='BUILDING UI...';
+  buildStgUI();
+  document.getElementById('h-xp').textContent=XP;
+  document.getElementById('hero-xp').textContent=XP;
+  document.getElementById('fav-badge').textContent=favs.size;
+  document.getElementById('fav-badge').classList.toggle('v',favs.size>0);
+  document.getElementById('ach-cnt').textContent=achDone.size+'/'+ACHS.length;
+
+  fill.style.width='100%';stxt.textContent='READY!';
+  await sl(380);
+  document.getElementById('sload').classList.add('done');
+  checkDaily();checkAch();
+})();
+</script>
+</body>
+</html>
