@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>ARCADE VAULT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Kufi+Arabic:wght@400;600;900&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────────────────────
+   TOKENS
+───────────────────────────────────────── */
+:root {
+  --bg0: #0a0a0f;
+  --bg1: #101018;
+  --bg2: #16161f;
+  --bg3: #1c1c28;
+  --line: rgba(255,255,255,.08);
+  --line2: rgba(255,255,255,.14);
+  --tx0: #f0f0ff;
+  --tx1: #9090b8;
+  --tx2: #50506a;
+  --acc: #7c5cfc;
+  --acc2: #fc5c8c;
+  --ok: #3cffa0;
+  --warn: #ffc940;
+  --err: #ff4060;
+  --mono: 'Space Mono', monospace;
+  --arab: 'Noto Kufi Arabic', system-ui, sans-serif;
+  --r: 10px;
+}
+
+/* ─────────────────────────────────────────
+   RESET
+───────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow-x: hidden; }
+body { background: var(--bg0); color: var(--tx0); font-family: var(--arab); font-size: 14px; }
+button { cursor: pointer; font-family: inherit; border: none; background: none; color: inherit; }
+input, select, textarea { font-family: inherit; color: inherit; background: none; border: none; outline: none; }
+img { display: block; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 4px; }
+
+/* ─────────────────────────────────────────
+   BACKGROUND NOISE TEXTURE
+───────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    radial-gradient(ellipse 60% 40% at 80% 0%, rgba(124,92,252,.07) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 50% at 10% 100%, rgba(252,92,140,.05) 0%, transparent 55%);
+}
+
+/* ─────────────────────────────────────────
+   LAYOUT SHELL
+───────────────────────────────────────── */
+#app { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ─────────────────────────────────────────
+   TOP BAR
+───────────────────────────────────────── */
+#topbar {
+  position: sticky; top: 0; z-index: 80;
+  height: 52px;
+  background: rgba(10,10,15,.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 16px;
+}
+#logo {
+  font-family: var(--mono); font-size: 13px; font-weight: 700;
+  letter-spacing: 3px; color: var(--tx0); white-space: nowrap;
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+}
+#logo-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--acc); box-shadow: 0 0 10px var(--acc);
+  animation: pulse 2s ease infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+#search-wrap { flex: 1; max-width: 340px; position: relative; }
+#search {
+  width: 100%; height: 32px;
+  background: var(--bg2); border: 1px solid var(--line);
+  border-radius: 6px; padding: 0 10px 0 30px;
+  font-size: 13px; color: var(--tx0); transition: border-color .2s;
+}
+#search:focus { border-color: var(--acc); }
+#search::placeholder { color: var(--tx2); }
+#search-wrap::before { content: '⌕'; position: absolute; right: 9px; top: 50%; transform: translateY(-50%); color: var(--tx2); font-size: 16px; pointer-events: none; }
+#topbar-right { margin-right: auto; display: flex; align-items: center; gap: 8px; }
+.topbar-stat { font-family: var(--mono); font-size: 11px; color: var(--tx2); }
+.topbar-stat span { color: var(--tx0); }
+#sync-btn, #settings-btn {
+  width: 32px; height: 32px; border-radius: 6px;
+  background: var(--bg2); border: 1px solid var(--line);
+  color: var(--tx1); font-size: 15px;
+  display: grid; place-items: center; transition: all .2s;
+}
+#sync-btn:hover, #settings-btn:hover { border-color: var(--acc); color: var(--tx0); }
+#sync-btn.spinning { animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 500px) { .topbar-stat { display: none; } }
+
+/* ─────────────────────────────────────────
+   NAV TABS
+───────────────────────────────────────── */
+#nav {
+  display: flex; overflow-x: auto; scrollbar-width: none;
+  background: var(--bg1); border-bottom: 1px solid var(--line);
+  position: sticky; top: 52px; z-index: 79;
+}
+#nav::-webkit-scrollbar { display: none; }
+.tab {
+  padding: 0 18px; height: 42px; font-size: 12px; font-weight: 600;
+  color: var(--tx2); white-space: nowrap; border-bottom: 2px solid transparent;
+  transition: all .18s; display: flex; align-items: center; gap: 6px;
+}
+.tab.on { color: var(--tx0); border-bottom-color: var(--acc); }
+.tab:hover:not(.on) { color: var(--tx1); }
+.tab-badge {
+  background: var(--acc); color: #fff; border-radius: 20px;
+  padding: 1px 6px; font-size: 10px; font-family: var(--mono);
+}
+
+/* ─────────────────────────────────────────
+   SCREENS
+───────────────────────────────────────── */
+.screen { display: none; padding: 20px 16px 80px; max-width: 1400px; margin: 0 auto; width: 100%; }
+.screen.on { display: block; animation: fadeUp .22s ease; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ─────────────────────────────────────────
+   STATUS BAR
+───────────────────────────────────────── */
+#status-bar {
+  padding: 10px 16px; background: var(--bg1); border-bottom: 1px solid var(--line);
+  font-size: 12px; color: var(--tx2); display: flex; align-items: center; gap: 8px;
+}
+#status-bar.hide { display: none; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--tx2); flex-shrink: 0; }
+.status-dot.ok { background: var(--ok); box-shadow: 0 0 6px var(--ok); }
+.status-dot.warn { background: var(--warn); }
+.status-dot.err { background: var(--err); }
+.status-dot.spin { background: var(--acc); animation: pulse .6s ease infinite; }
+#status-txt { flex: 1; }
+#status-action { font-family: var(--mono); font-size: 11px; color: var(--acc); cursor: pointer; padding: 2px 8px; border: 1px solid var(--acc); border-radius: 4px; }
+#status-action:hover { background: rgba(124,92,252,.1); }
+
+/* ─────────────────────────────────────────
+   SECTION HEADER
+───────────────────────────────────────── */
+.sec { margin-bottom: 20px; }
+.sec-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.sec-title { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; color: var(--tx2); text-transform: uppercase; }
+.sec-line { flex: 1; height: 1px; background: var(--line); }
+.sec-count { font-family: var(--mono); font-size: 11px; color: var(--tx2); }
+
+/* ─────────────────────────────────────────
+   FILTER CHIPS
+───────────────────────────────────────── */
+.chips { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; margin-bottom: 14px; }
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  padding: 4px 12px; border-radius: 20px; font-size: 12px;
+  border: 1px solid var(--line); color: var(--tx2); white-space: nowrap; transition: all .15s;
+}
+.chip.on, .chip:hover { border-color: var(--acc); color: var(--tx0); background: rgba(124,92,252,.1); }
+
+/* ─────────────────────────────────────────
+   GAME GRID
+───────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+@media (min-width: 800px) { .grid { grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); } }
+@media (max-width: 380px) { .grid { grid-template-columns: repeat(2, 1fr); gap: 8px; } }
+
+/* Game card */
+.gcard {
+  --c: var(--acc);
+  border-radius: var(--r); overflow: hidden; cursor: pointer;
+  background: var(--bg1); border: 1px solid var(--line);
+  transition: transform .22s cubic-bezier(.34,1.56,.64,1), border-color .18s, box-shadow .22s;
+  position: relative;
+}
+.gcard:hover { transform: translateY(-5px) scale(1.02); border-color: var(--c); box-shadow: 0 12px 36px rgba(0,0,0,.5), 0 0 20px color-mix(in srgb, var(--c) 20%, transparent); }
+.gcard:active { transform: scale(.97) !important; }
+
+/* Poster */
+.gcard-poster { position: relative; aspect-ratio: 3/4; background: var(--bg2); overflow: hidden; }
+.gcard-poster canvas { width: 100%; height: 100%; display: block; transition: transform .35s; }
+.gcard-poster img.art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .3s, transform .35s; }
+.gcard-poster img.art.ok { opacity: 1; }
+.gcard:hover .gcard-poster canvas, .gcard:hover .gcard-poster img.art { transform: scale(1.06); }
+
+/* Hover play */
+.gcard-play {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  background: rgba(0,0,0,.6); backdrop-filter: blur(4px);
+  opacity: 0; transition: opacity .18s;
+}
+.gcard:hover .gcard-play { opacity: 1; }
+.play-btn {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--c); border: 3px solid rgba(255,255,255,.25);
+  display: grid; place-items: center; font-size: 20px;
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--c) 50%, transparent);
+  transition: transform .15s;
+}
+.gcard:hover .play-btn { transform: scale(1.08); }
+
+/* System badge */
+.sys-tag {
+  position: absolute; top: 6px; left: 6px;
+  font-family: var(--mono); font-size: 8px; letter-spacing: 1px;
+  padding: 2px 6px; border-radius: 4px;
+  background: rgba(0,0,0,.75); backdrop-filter: blur(6px);
+  border: 1px solid color-mix(in srgb, var(--c) 50%, transparent);
+  color: var(--c);
+}
+/* Fav */
+.fav-btn {
+  position: absolute; top: 6px; right: 6px; width: 26px; height: 26px;
+  border-radius: 50%; background: rgba(0,0,0,.7); backdrop-filter: blur(6px);
+  border: 1px solid var(--line2); font-size: 13px; display: grid; place-items: center;
+  opacity: 0; transition: opacity .15s, color .15s;
+}
+.gcard:hover .fav-btn, .fav-btn.on { opacity: 1; }
+.fav-btn.on { color: #ff4466; border-color: rgba(255,68,102,.4); }
+
+/* Info */
+.gcard-info { padding: 8px 10px 10px; }
+.gcard-name { font-size: 12px; font-weight: 600; color: var(--tx0); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+.gcard-sub { display: flex; justify-content: space-between; }
+.gcard-sys { font-family: var(--mono); font-size: 9px; color: var(--c); }
+.gcard-yr { font-size: 10px; color: var(--tx2); }
+
+/* ─────────────────────────────────────────
+   EMPTY STATE
+───────────────────────────────────────── */
+.empty {
+  text-align: center; padding: 60px 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.empty-ico { font-size: 52px; opacity: .15; }
+.empty-title { font-family: var(--mono); font-size: 14px; color: var(--tx1); }
+.empty-sub { font-size: 12px; color: var(--tx2); max-width: 280px; line-height: 1.7; }
+
+/* ─────────────────────────────────────────
+   SYSTEM CARDS (systems screen)
+───────────────────────────────────────── */
+.sys-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.sys-card {
+  background: var(--bg1); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 14px 16px; cursor: pointer; transition: all .18s;
+  display: flex; align-items: center; gap: 12px;
+}
+.sys-card:hover { border-color: var(--c, var(--acc)); background: var(--bg2); }
+.sys-ico { width: 40px; height: 40px; border-radius: 8px; display: grid; place-items: center; font-size: 20px; flex-shrink: 0; background: color-mix(in srgb, var(--c, var(--acc)) 15%, transparent); border: 1px solid color-mix(in srgb, var(--c, var(--acc)) 30%, transparent); }
+.sys-info { flex: 1; min-width: 0; }
+.sys-name { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--tx0); }
+.sys-full { font-size: 11px; color: var(--tx2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sys-cnt { font-family: var(--mono); font-size: 11px; color: var(--c, var(--acc)); }
+
+/* ─────────────────────────────────────────
+   SETTINGS PANEL (full screen overlay)
+───────────────────────────────────────── */
+#settings-panel {
+  position: fixed; inset: 0; z-index: 200;
+  background: var(--bg0); overflow-y: auto;
+  transform: translateX(-100%); transition: transform .3s cubic-bezier(.4,0,.2,1);
+}
+#settings-panel.open { transform: none; }
+#settings-panel::-webkit-scrollbar { display: none; }
+
+.stg-topbar {
+  position: sticky; top: 0; height: 52px;
+  background: rgba(10,10,15,.95); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 12px; padding: 0 16px; z-index: 1;
+}
+.stg-back {
+  width: 32px; height: 32px; border-radius: 6px;
+  background: var(--bg2); border: 1px solid var(--line);
+  color: var(--tx1); font-size: 18px; display: grid; place-items: center; transition: all .15s;
+}
+.stg-back:hover { border-color: var(--acc); color: var(--tx0); }
+.stg-title { font-family: var(--mono); font-size: 13px; letter-spacing: 2px; color: var(--tx1); }
+
+.stg-body { padding: 20px 16px 80px; max-width: 700px; margin: 0 auto; }
+.stg-section { margin-bottom: 28px; }
+.stg-sec-title { font-family: var(--mono); font-size: 10px; letter-spacing: 2.5px; color: var(--tx2); text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.stg-sec-title::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
+.stg-group { background: var(--bg1); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.stg-row { display: flex; align-items: center; gap: 12px; padding: 13px 15px; border-bottom: 1px solid var(--line); }
+.stg-row:last-child { border-bottom: none; }
+.stg-row-ico { width: 36px; height: 36px; border-radius: 8px; background: var(--bg2); border: 1px solid var(--line); display: grid; place-items: center; font-size: 17px; flex-shrink: 0; }
+.stg-row-info { flex: 1; min-width: 0; }
+.stg-row-title { font-size: 13px; font-weight: 600; color: var(--tx0); }
+.stg-row-sub { font-size: 11px; color: var(--tx2); margin-top: 1px; }
+.stg-row-ctrl { flex-shrink: 0; }
+
+/* Toggle switch */
+.toggle { width: 38px; height: 22px; background: var(--bg3); border-radius: 11px; position: relative; cursor: pointer; transition: background .2s; border: 1px solid var(--line2); }
+.toggle.on { background: var(--acc); border-color: var(--acc); }
+.toggle::after { content: ''; position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .2s; }
+.toggle.on::after { transform: translateX(-16px); }
+
+/* Select in settings */
+.stg-select {
+  height: 30px; padding: 0 8px; border-radius: 6px;
+  background: var(--bg2); border: 1px solid var(--line2);
+  font-size: 12px; color: var(--tx0); cursor: pointer;
+  min-width: 120px;
+}
+.stg-select option { background: var(--bg2); }
+.stg-select:focus { border-color: var(--acc); }
+
+/* Input in settings */
+.stg-input {
+  height: 30px; padding: 0 10px; border-radius: 6px;
+  background: var(--bg2); border: 1px solid var(--line2);
+  font-size: 12px; color: var(--tx0); width: 100%;
+  transition: border-color .2s;
+}
+.stg-input:focus { border-color: var(--acc); }
+.stg-input::placeholder { color: var(--tx2); }
+.stg-input-row { display: flex; gap: 6px; margin-top: 6px; width: 100%; padding: 0 15px 13px; }
+.stg-input-row .stg-input { flex: 1; }
+.stg-btn { height: 30px; padding: 0 14px; border-radius: 6px; background: rgba(124,92,252,.2); border: 1px solid rgba(124,92,252,.4); color: #aa88ff; font-size: 12px; font-weight: 600; transition: all .15s; white-space: nowrap; }
+.stg-btn:hover { background: rgba(124,92,252,.35); }
+.stg-btn.danger { background: rgba(255,64,96,.1); border-color: rgba(255,64,96,.3); color: #ff8899; }
+.stg-btn.danger:hover { background: rgba(255,64,96,.2); }
+
+/* Slider */
+.stg-slider { width: 100px; accent-color: var(--acc); }
+
+/* Performance badges */
+.perf-badge { font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 4px; }
+.p1 { background: rgba(60,255,160,.1); color: #3cffa0; border: 1px solid rgba(60,255,160,.2); }
+.p2 { background: rgba(255,201,64,.1); color: #ffc940; border: 1px solid rgba(255,201,64,.2); }
+.p3 { background: rgba(255,120,40,.1); color: #ff7828; border: 1px solid rgba(255,120,40,.2); }
+.p4 { background: rgba(255,64,96,.1); color: #ff4060; border: 1px solid rgba(255,64,96,.2); }
+
+/* Shader picker */
+.shader-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 6px; }
+.shader-opt {
+  padding: 8px 6px; border-radius: 7px; border: 1px solid var(--line);
+  background: var(--bg2); cursor: pointer; text-align: center;
+  font-size: 11px; color: var(--tx2); transition: all .15s;
+}
+.shader-opt .sh-ico { font-size: 20px; margin-bottom: 4px; }
+.shader-opt:hover, .shader-opt.on { border-color: var(--acc); color: var(--tx0); background: rgba(124,92,252,.1); }
+
+/* ─────────────────────────────────────────
+   EMULATOR OVERLAY
+───────────────────────────────────────── */
+#emu { position: fixed; inset: 0; z-index: 300; background: #000; display: none; flex-direction: column; }
+#emu.on { display: flex; }
+#emu-bar {
+  height: 46px; flex-shrink: 0;
+  background: rgba(10,10,15,.98); border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 7px; padding: 0 10px;
+}
+#emu-back { width: 34px; height: 34px; border-radius: 7px; background: var(--bg2); border: 1px solid var(--line2); color: var(--tx0); font-size: 18px; display: grid; place-items: center; flex-shrink: 0; transition: all .15s; }
+#emu-back:hover { border-color: var(--acc); }
+#emu-info { flex: 1; text-align: center; min-width: 0; }
+#emu-title { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--tx0); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#emu-sys { font-size: 9px; color: var(--tx2); letter-spacing: 2px; }
+.emu-as { display: flex; align-items: center; gap: 4px; font-family: var(--mono); font-size: 9px; color: var(--tx2); flex-shrink: 0; }
+.emu-as.on { color: var(--ok); }
+.emu-as-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.emu-as.on .emu-as-dot { animation: pulse .9s ease infinite; }
+.emu-btns { display: flex; gap: 4px; }
+.emu-btn { height: 28px; padding: 0 10px; border-radius: 6px; background: var(--bg2); border: 1px solid var(--line2); color: var(--tx0); font-size: 11px; font-weight: 600; transition: all .15s; white-space: nowrap; }
+.emu-btn:hover { border-color: var(--acc); }
+.emu-btn.saved { background: rgba(60,255,160,.1); border-color: rgba(60,255,160,.3); color: var(--ok); }
+
+#emu-content { flex: 1; position: relative; overflow: hidden; background: #000; }
+#emu-frame { width: 100%; height: 100%; border: none; }
+
+/* Loading */
+#emu-load { position: absolute; inset: 0; z-index: 10; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; transition: opacity .4s; }
+#emu-load.gone { opacity: 0; pointer-events: none; }
+.load-poster { width: 96px; height: 132px; border-radius: 9px; overflow: hidden; box-shadow: 0 16px 48px rgba(0,0,0,.9), 0 0 32px rgba(124,92,252,.3); animation: float 2s ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+.load-poster canvas, .load-poster img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.load-title { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--tx0); text-align: center; max-width: 240px; }
+.load-sys { font-size: 9px; color: var(--tx2); letter-spacing: 2.5px; text-align: center; }
+.load-status { font-family: var(--mono); font-size: 10px; color: var(--acc); min-height: 14px; text-align: center; }
+.load-track { width: 180px; height: 2px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+.load-fill { height: 100%; background: linear-gradient(90deg, var(--acc), var(--acc2)); animation: loadAnim 1.8s ease infinite; }
+@keyframes loadAnim { 0%{width:0;margin-left:0} 50%{width:65%;margin-left:15%} 100%{width:0;margin-left:100%} }
+
+/* Error */
+#emu-err { position: absolute; inset: 0; z-index: 11; background: rgba(10,10,15,.96); display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 32px; }
+#emu-err.on { display: flex; }
+.err-title { font-family: var(--mono); font-size: 13px; color: var(--err); }
+.err-box { background: rgba(255,64,96,.06); border: 1px solid rgba(255,64,96,.2); border-radius: 9px; padding: 14px 18px; max-width: 340px; width: 100%; }
+.err-box ul { padding-right: 14px; font-size: 12px; color: #ff9aaa; line-height: 2.1; }
+.err-close { height: 34px; padding: 0 20px; border-radius: 7px; background: var(--bg2); border: 1px solid var(--line2); font-size: 12px; font-weight: 600; transition: all .15s; }
+.err-close:hover { border-color: var(--acc); }
+
+/* Quick Panel */
+#qp { position: absolute; top: 0; right: 0; bottom: 0; width: 260px; background: rgba(10,10,15,.92); backdrop-filter: blur(28px); border-left: 1px solid var(--line); z-index: 12; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); display: flex; flex-direction: column; }
+#qp.open { transform: none; }
+.qp-head { height: 46px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; padding: 0 14px; flex-shrink: 0; }
+.qp-label { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; color: var(--tx1); }
+.qp-x { width: 26px; height: 26px; border-radius: 6px; background: var(--bg2); border: 1px solid var(--line); font-size: 13px; display: grid; place-items: center; color: var(--tx1); transition: all .15s; }
+.qp-x:hover { border-color: var(--acc); }
+.qp-body { flex: 1; overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; scrollbar-width: none; }
+.qp-body::-webkit-scrollbar { display: none; }
+.qp-sec { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; color: var(--tx2); margin: 4px 0 1px; }
+.qp-btn { display: flex; align-items: center; gap: 9px; padding: 9px 11px; border-radius: 8px; background: var(--bg2); border: 1px solid var(--line); transition: all .15s; text-align: right; font-size: 12px; font-weight: 600; width: 100%; }
+.qp-btn:hover { border-color: var(--acc); background: rgba(124,92,252,.08); }
+.qp-btn.danger { color: var(--err); }
+.qp-btn.danger:hover { border-color: rgba(255,64,96,.4); background: rgba(255,64,96,.06); }
+.qp-ico { width: 30px; height: 30px; border-radius: 7px; display: grid; place-items: center; font-size: 15px; flex-shrink: 0; }
+.qp-slots { display: flex; gap: 4px; }
+.qp-slot { flex: 1; height: 30px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg2); font-family: var(--mono); font-size: 9px; color: var(--tx2); transition: all .15s; }
+.qp-slot.on, .qp-slot:hover { border-color: var(--acc); color: var(--acc); background: rgba(124,92,252,.08); }
+.sh-mini-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 4px; }
+.sh-mini { padding: 5px 3px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg2); font-size: 10px; color: var(--tx2); text-align: center; transition: all .15s; cursor: pointer; }
+.sh-mini.on { border-color: var(--acc); color: var(--acc); background: rgba(124,92,252,.1); }
+#qp-toggle { position: absolute; top: 50%; right: 0; transform: translateY(-50%); width: 22px; height: 50px; background: rgba(124,92,252,.25); border: 1px solid rgba(124,92,252,.4); border-radius: 6px 0 0 6px; display: grid; place-items: center; font-size: 10px; color: var(--tx0); z-index: 13; cursor: pointer; }
+
+/* On-screen gamepad */
+#gp-overlay { position: absolute; bottom: 0; left: 0; right: 0; z-index: 5; pointer-events: none; display: none; padding: 6px 10px 8px; }
+#gp-overlay.on { display: flex; align-items: flex-end; justify-content: space-between; }
+.gp-dpad { display: grid; grid-template-columns: repeat(3,40px); grid-template-rows: repeat(3,40px); gap: 2px; pointer-events: all; }
+.gp-d { width: 40px; height: 40px; border-radius: 7px; background: rgba(0,0,0,.72); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,.1); color: var(--tx0); font-size: 15px; display: grid; place-items: center; cursor: pointer; user-select: none; touch-action: manipulation; }
+.gp-d:active, .gp-d.p { background: rgba(255,255,255,.2); }
+.gp-center { display: flex; flex-direction: column; align-items: center; gap: 6px; pointer-events: all; }
+.gp-mrow { display: flex; gap: 8px; }
+.gp-mid { padding: 5px 11px; border-radius: 18px; background: rgba(0,0,0,.7); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,.1); color: var(--tx0); font-size: 8px; letter-spacing: 1px; cursor: pointer; touch-action: manipulation; font-family: var(--mono); }
+.gp-mid:active { background: rgba(255,255,255,.2); }
+.gp-abxy { display: grid; grid-template-columns: repeat(2,44px); grid-template-rows: repeat(2,44px); gap: 4px; pointer-events: all; }
+.gp-b { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-family: var(--mono); font-size: 12px; font-weight: 700; cursor: pointer; user-select: none; touch-action: manipulation; border: 3px solid rgba(255,255,255,.18); transition: transform .08s; box-shadow: 0 3px 10px rgba(0,0,0,.5); }
+.gp-b:active, .gp-b.p { transform: scale(.85); }
+.gp-b.a{background:#e60012}.gp-b.b{background:#1e90ff}.gp-b.x{background:#f5a623}.gp-b.y{background:#00b050}
+
+/* CRT filters */
+.crt-scan #emu-content::after { content:''; position:absolute; inset:0; background:repeating-linear-gradient(0deg,rgba(0,0,0,.09),rgba(0,0,0,.09) 1px,transparent 1px,transparent 3px); pointer-events:none; z-index:3; }
+.crt-crt #emu-frame { filter:brightness(1.06) contrast(1.12) saturate(1.12); }
+.crt-crt #emu-content::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at center,transparent 65%,rgba(0,0,0,.55) 100%); pointer-events:none; z-index:3; }
+.crt-crt #emu-content::after { content:''; position:absolute; inset:0; background:repeating-linear-gradient(0deg,rgba(0,0,0,.07),rgba(0,0,0,.07) 1px,transparent 1px,transparent 3px); pointer-events:none; z-index:3; }
+.crt-warm #emu-frame { filter:sepia(.3) brightness(.96) contrast(1.05); }
+.crt-neon #emu-frame { filter:brightness(1.12) contrast(1.18) saturate(1.7) hue-rotate(10deg); }
+
+/* ─────────────────────────────────────────
+   MISC UI
+───────────────────────────────────────── */
+#toast { position: fixed; bottom: 68px; left: 50%; transform: translateX(-50%) translateY(10px); background: rgba(16,16,24,.97); border: 1px solid var(--line2); color: var(--tx0); padding: 9px 18px; border-radius: 50px; font-size: 13px; z-index: 999; opacity: 0; transition: all .25s; white-space: nowrap; pointer-events: none; backdrop-filter: blur(16px); box-shadow: 0 6px 24px rgba(0,0,0,.5); max-width: 92vw; }
+#toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+#gp-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); background: rgba(60,255,160,.08); border: 1px solid rgba(60,255,160,.25); color: var(--ok); font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 6px 6px 0 0; z-index: 88; opacity: 0; pointer-events: none; transition: opacity .35s; }
+#gp-bar.on { opacity: 1; }
+
+/* ─────────────────────────────────────────
+   SITE LOADER
+───────────────────────────────────────── */
+#siteload { position: fixed; inset: 0; z-index: 900; background: var(--bg0); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; transition: opacity .4s; }
+#siteload.done { opacity: 0; pointer-events: none; }
+#siteload-logo { font-family: var(--mono); font-size: 28px; letter-spacing: 4px; color: var(--tx0); }
+#siteload-logo span { color: var(--acc); }
+#siteload-bar { width: 160px; height: 2px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+#siteload-fill { height: 100%; background: linear-gradient(90deg, var(--acc), var(--acc2)); width: 0; transition: width .3s; }
+#siteload-txt { font-family: var(--mono); font-size: 10px; color: var(--tx2); letter-spacing: 1px; }
+</style>
+</head>
+<body>
+
+<!-- ─── SITE LOADER ─────────────────── -->
+<div id="siteload">
+  <div id="siteload-logo">ARCADE<span>.</span>VAULT</div>
+  <div id="siteload-bar"><div id="siteload-fill"></div></div>
+  <div id="siteload-txt" id="sltxt">INITIALIZING...</div>
+</div>
+
+<!-- ─── APP ─────────────────────────── -->
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div id="topbar">
+    <div id="logo" onclick="nav('home')">
+      <div id="logo-dot"></div>
+      <span>ARCADE.VAULT</span>
+    </div>
+    <div id="search-wrap">
+      <input id="search" type="text" placeholder="ابحث..." oninput="onSearch(this.value)">
+    </div>
+    <div id="topbar-right">
+      <div class="topbar-stat"><span id="stat-games">0</span> GAMES</div>
+      <div class="topbar-stat"><span id="stat-sys">0</span> SYSTEMS</div>
+      <button id="sync-btn" title="مزامنة" onclick="scanRoms(true)">↻</button>
+      <button id="settings-btn" title="الإعدادات" onclick="openSettings()">⚙</button>
+    </div>
+  </div>
+
+  <!-- STATUS BAR -->
+  <div id="status-bar" class="hide">
+    <div class="status-dot" id="sdot"></div>
+    <div id="status-txt">—</div>
+    <button id="status-action" style="display:none" onclick="openSettings()">الإعدادات</button>
+  </div>
+
+  <!-- NAV TABS -->
+  <div id="nav">
+    <button class="tab on" id="tab-home" onclick="nav('home')">🏠 الرئيسية</button>
+    <button class="tab" id="tab-games" onclick="nav('games')">🎮 الألعاب <span class="tab-badge" id="tab-games-badge">0</span></button>
+    <button class="tab" id="tab-systems" onclick="nav('systems')">📟 الأنظمة</button>
+    <button class="tab" id="tab-fav" onclick="nav('fav')">❤ المفضلة <span class="tab-badge" id="tab-fav-badge">0</span></button>
+  </div>
+
+  <!-- ── HOME SCREEN ── -->
+  <div class="screen on" id="screen-home">
+    <div style="padding:28px 0 20px;text-align:center">
+      <div style="font-family:var(--mono);font-size:9px;letter-spacing:4px;color:var(--tx2);margin-bottom:10px">RETRO CLOUD GAMING</div>
+      <div style="font-family:var(--mono);font-size:clamp(28px,7vw,56px);font-weight:700;background:linear-gradient(135deg,#fff 40%,var(--acc));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:10px">ARCADE.VAULT</div>
+      <div style="font-size:13px;color:var(--tx2);margin-bottom:20px;line-height:1.6">العب مباشرة من المتصفح — محاكيات سحابية</div>
+      <div style="display:flex;justify-content:center;gap:28px">
+        <div style="text-align:center"><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--tx0)" id="h-games">0</div><div style="font-size:9px;color:var(--tx2);letter-spacing:2px">GAMES</div></div>
+        <div style="text-align:center"><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--tx0)" id="h-sys">0</div><div style="font-size:9px;color:var(--tx2);letter-spacing:2px">SYSTEMS</div></div>
+        <div style="text-align:center"><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--tx0)">∞</div><div style="font-size:9px;color:var(--tx2);letter-spacing:2px">FUN</div></div>
+      </div>
+    </div>
+    <!-- Recent games -->
+    <div class="sec">
+      <div class="sec-row"><div class="sec-title">الأحدث</div><div class="sec-line"></div><div class="sec-count" id="h-count">0</div></div>
+      <div class="chips" id="h-chips"></div>
+      <div class="grid" id="h-grid"></div>
+    </div>
+  </div>
+
+  <!-- ── GAMES SCREEN ── -->
+  <div class="screen" id="screen-games">
+    <div class="sec">
+      <div class="sec-row"><div class="sec-title">كل الألعاب</div><div class="sec-line"></div><div class="sec-count" id="g-count">0</div></div>
+      <div class="chips" id="g-chips"></div>
+      <div class="grid" id="g-grid"></div>
+    </div>
+  </div>
+
+  <!-- ── SYSTEMS SCREEN ── -->
+  <div class="screen" id="screen-systems">
+    <div class="sec">
+      <div class="sec-row"><div class="sec-title">الأنظمة</div><div class="sec-line"></div></div>
+      <div class="sys-grid" id="sys-grid"></div>
+    </div>
+  </div>
+
+  <!-- ── FAVORITES SCREEN ── -->
+  <div class="screen" id="screen-fav">
+    <div class="sec">
+      <div class="sec-row"><div class="sec-title">المفضلة</div><div class="sec-line"></div></div>
+      <div class="grid" id="fav-grid"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── SETTINGS PANEL ──────────────── -->
+<div id="settings-panel">
+  <div class="stg-topbar">
+    <button class="stg-back" onclick="closeSettings()">←</button>
+    <div class="stg-title">SETTINGS</div>
+  </div>
+  <div class="stg-body">
+
+    <!-- ── CLOUD & SOURCE ── -->
+    <div class="stg-section">
+      <div class="stg-sec-title">☁ المصدر السحابي</div>
+      <div class="stg-group">
+        <div class="stg-row">
+          <div class="stg-row-ico">🐙</div>
+          <div class="stg-row-info">
+            <div class="stg-row-title">GitHub Repository</div>
+            <div class="stg-row-sub">username/repo — يُكتشف تلقائياً من الرابط</div>
+          </div>
+          <div class="stg-row-ctrl">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--acc)" id="s-repo-label">AUTO</div>
+          </div>
+        </div>
+        <div class="stg-input-row">
+          <input class="stg-input" id="s-owner" placeholder="مالك المستودع (username)" oninput="updateRepoLabel()">
+          <input class="stg-input" id="s-repo" placeholder="اسم المستودع (repo)" oninput="updateRepoLabel()">
+        </div>
+        <div class="stg-row" style="border-top:1px solid var(--line)">
+          <div class="stg-row-ico">🔑</div>
+          <div class="stg-row-info">
+            <div class="stg-row-title">GitHub Token</div>
+            <div class="stg-row-sub">اختياري — للمستودعات الخاصة</div>
+          </div>
+        </div>
+        <div class="stg-input-row"><input class="stg-input" id="s-token" placeholder="ghp_..." type="password"><button class="stg-btn" onclick="saveCloud()">حفظ</button></div>
+        <div class="stg-row" style="border-top:1px solid var(--line)">
+          <div class="stg-row-ico">📁</div>
+          <div class="stg-row-info">
+            <div class="stg-row-title">مجلد الروم</div>
+            <div class="stg-row-sub">الاسم الافتراضي: roms</div>
+          </div>
+          <div class="stg-row-ctrl"><input class="stg-input" id="s-roms-folder" value="roms" style="width:80px;text-align:center"></div>
+        </div>
+        <div class="stg-row" style="border-top:1px solid var(--line);cursor:pointer" onclick="scanRoms(true)">
+          <div class="stg-row-ico">🔄</div>
+          <div class="stg-row-info">
+            <div class="stg-row-title">مسح وتحديث الألعاب</div>
+            <div class="stg-row-sub">إعادة قراءة مجلد الروم من GitHub</div>
+          </div>
+          <div class="stg-row-ctrl" style="font-size:16px;color:var(--tx2)">›</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── EMULATOR ENGINE ── -->
+    <div class="stg-section">
+      <div class="stg-sec-title">⚙ محرك المحاكاة</div>
+      <div class="stg-group">
+        <div class="stg-row">
+          <div class="stg-row-ico">🔧</div>
+          <div class="stg-row-info">
+            <div class="stg-row-title">EmulatorJS CDN</div>
+            <div class="stg-row-sub">مصدر محرك المحاكاة</div>
+          </div>
+        </div>
+        <div class="stg-input-row">
+          <input class="stg-input" id="s-ejs" value="https://cdn.emulatorjs.org/stable/data/" placeholder="URL لمجلد data/">
+          <button class="stg-btn" onclick="saveCDN()">حفظ</button>
+        </div>
+        <!-- Core overrides per system -->
+        <div class="stg-row" style="border-top:1px solid var(--line)">
+          <div class="stg-row-ico">🎯</div>
+          <div class="stg-row-info">
+            <div class="stg-row-title">Core Overrides</div>
+            <div class="stg-row-sub">اختر Core مختلف لكل نظام</div>
+          </div>
+        </div>
+        <div id="core-overrides" style="padding:0 15px 14px;display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+
+    <!-- ── BIOS ── -->
+    <div class="stg-section">
+      <div class="stg-sec-title">💾 BIOS URLs</div>
+      <div class="stg-group" id="bios-group">
+        <!-- generated -->
+      </div>
+    </div>
+
+    <!-- ── PERFORMANCE ── -->
+    <div class="stg-section">
+      <div class="stg-sec-title">⚡ الأداء</div>
+      <div class="stg-group">
+        <div class="stg-row">
+          <div class="stg-row-ico">🖥</div>
+          <div class="stg-row-info">
+            <div class="stg-row-title">WebGL</div>
+            <div class="stg-row-sub" id="webgl-status">لم يتم الفحص</div>
+          </div>
+          <div class="stg-row-ctrl"><button class="stg-btn" onclick="checkWebGL()">فحص</button></div>
+        </div>
+        <div class="stg-row">
+          <div class="stg-row-ico">💡</div>
+          <div class="stg-row-info">
+            <div class="stg-row-title">تسريع الأجهزة</div>
+            <div class="stg-row-sub">تفعيل WebGL لتسريع المحاكاة</div>
+          </div>
+          <div class="stg-row-ctrl"><div class="toggle on" id="t-webgl" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+        <div class="stg-row">
+          <div class="stg-row-ico">📊</div>
+          <div class="stg-row-info">
+            <div class="stg-row-title">إظهار تحذيرات الأداء</div>
+            <div class="stg-row-sub">تحذير عند تشغيل أنظمة ثقيلة</div>
+          </div>
+          <div class="stg-row-ctrl"><div class="toggle on" id="t-perf-warn" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+        <div class="stg-row">
+          <div class="stg-row-ico">🔀</div>
+          <div class="stg-row-info">
+            <div class="stg-row-title">CORS Proxy</div>
+            <div class="stg-row-sub">إذا فشلت الروابط الخارجية</div>
+          </div>
+        </div>
+        <div class="stg-input-row">
+          <input class="stg-input" id="s-proxy" placeholder="https://corsproxy.io/?">
+          <button class="stg-btn" onclick="saveProxy()">حفظ</button>
+          <button class="stg-btn danger" onclick="clearProxy()">مسح</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DISPLAY ── -->
+    <div class="stg-section">
+      <div class="stg-sec-title">📺 العرض والصورة</div>
+      <div class="stg-group">
+        <div class="stg-row">
+          <div class="stg-row-ico">🎨</div>
+          <div class="stg-row-info">
+            <div class="stg-row-title">CRT Shader</div>
+            <div class="stg-row-sub">فلتر بصري أثناء اللعب</div>
+          </div>
+        </div>
+        <div style="padding:0 15px 14px">
+          <div class="shader-grid" id="shader-grid"></div>
+        </div>
+        <div class="stg-row">
+          <div class="stg-row-ico">🖼</div>
+          <div class="stg-row-info">
+            <div class="stg-row-title">أغلفة حقيقية (Box Art)</div>
+            <div class="stg-row-sub">جلب من Libretro Thumbnails</div>
+          </div>
+          <div class="stg-row-ctrl"><div class="toggle on" id="t-art" onclick="toggleArt()"></div></div>
+        </div>
+        <div class="stg-row">
+          <div class="stg-row-ico">📱</div>
+          <div class="stg-row-info">
+            <div class="stg-row-title">أزرار اللعب على الشاشة</div>
+            <div class="stg-row-sub">Gamepad للموبايل</div>
+          </div>
+          <div class="stg-row-ctrl"><div class="toggle" id="t-gp" onclick="toggleGpUi()"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SAVE ── -->
+    <div class="stg-section">
+      <div class="stg-sec-title">💾 الحفظ</div>
+      <div class="stg-group">
+        <div class="stg-row">
+          <div class="stg-row-ico">⏱</div>
+          <div class="stg-row-info">
+            <div class="stg-row-title">حفظ تلقائي</div>
+            <div class="stg-row-sub">كل 60 ثانية أثناء اللعب</div>
+          </div>
+          <div class="stg-row-ctrl"><div class="toggle on" id="t-as" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ABOUT ── -->
+    <div class="stg-section">
+      <div class="stg-sec-title">ℹ معلومات</div>
+      <div class="stg-group">
+        <div class="stg-row" style="cursor:default"><div class="stg-row-ico">📦</div><div class="stg-row-info"><div class="stg-row-title">ARCADE VAULT</div><div class="stg-row-sub">Cloud Gaming Platform — Auto-Scan ROMs</div></div></div>
+        <div class="stg-row" style="cursor:default"><div class="stg-row-ico">🔧</div><div class="stg-row-info"><div class="stg-row-title">Engine</div><div class="stg-row-sub">EmulatorJS — Libretro WebAssembly Cores</div></div></div>
+        <div class="stg-row" style="cursor:default"><div class="stg-row-ico">🖼</div><div class="stg-row-info"><div class="stg-row-title">Box Art</div><div class="stg-row-sub">Libretro Thumbnails (Free, no API Key)</div></div></div>
+        <div class="stg-row" id="s-systems-list" style="flex-direction:column;align-items:flex-start;gap:0;padding:0"><!-- generated --></div>
+      </div>
+    </div>
+
+  </div><!-- /stg-body -->
+</div>
+
+<!-- ─── EMULATOR ────────────────────── -->
+<div id="emu">
+  <div id="emu-bar">
+    <button id="emu-back" onclick="exitEmu()">←</button>
+    <div id="emu-info">
+      <div id="emu-title">—</div>
+      <div id="emu-sys">—</div>
+    </div>
+    <div class="emu-as" id="emu-as"><div class="emu-as-dot"></div><span>AUTO</span></div>
+    <div class="emu-btns">
+      <button class="emu-btn" id="btn-save" onclick="doSave()">💾 حفظ</button>
+      <button class="emu-btn" onclick="doLoad()">📂 تحميل</button>
+      <button class="emu-btn" onclick="toggleQP()">⚙</button>
+      <button class="emu-btn" onclick="doFS()">⛶</button>
+    </div>
+  </div>
+  <div id="emu-content">
+    <!-- Loading -->
+    <div id="emu-load">
+      <div class="load-poster"><img id="load-img" style="display:none"><canvas id="load-cvs" width="96" height="132"></canvas></div>
+      <div class="load-title" id="load-title">جاري التحميل...</div>
+      <div class="load-sys" id="load-sys"></div>
+      <div class="load-status" id="load-status"></div>
+      <div class="load-track"><div class="load-fill"></div></div>
+    </div>
+    <!-- Error -->
+    <div id="emu-err">
+      <div style="font-size:48px;opacity:.3">⚠</div>
+      <div class="err-title">تعذّر التشغيل</div>
+      <div class="err-box"><ul id="err-list"></ul></div>
+      <button class="err-close" onclick="closeErr()">← رجوع</button>
+    </div>
+    <iframe id="emu-frame" allowfullscreen allow="autoplay;fullscreen;gamepad"></iframe>
+    <!-- Quick Panel -->
+    <div id="qp">
+      <div class="qp-head"><div class="qp-label">QUICK MENU</div><button class="qp-x" onclick="toggleQP()">✕</button></div>
+      <div class="qp-body">
+        <div class="qp-sec">SAVE SLOT</div>
+        <div class="qp-slots" id="qp-slots"></div>
+        <button class="qp-btn" onclick="doSave()"><div class="qp-ico" style="background:rgba(60,255,160,.1)">💾</div>حفظ الحالة</button>
+        <button class="qp-btn" onclick="doLoad()"><div class="qp-ico" style="background:rgba(30,144,255,.1)">📂</div>تحميل الحالة</button>
+        <div class="qp-sec" style="margin-top:6px">DISPLAY</div>
+        <div class="sh-mini-grid" id="qp-shaders"></div>
+        <div class="qp-sec" style="margin-top:6px">CONTROLS</div>
+        <button class="qp-btn" onclick="toggleGpUi();toggleQP()"><div class="qp-ico" style="background:rgba(124,92,252,.1)">🕹</div>أزرار الشاشة</button>
+        <button class="qp-btn danger" onclick="exitEmu()"><div class="qp-ico" style="background:rgba(255,64,96,.1)">✕</div>إغلاق اللعبة</button>
+      </div>
+    </div>
+    <div id="qp-toggle" onclick="toggleQP()">☰</div>
+    <!-- Gamepad -->
+    <div id="gp-overlay">
+      <div>
+        <div class="gp-dpad">
+          <div></div><div class="gp-d" data-k="ArrowUp" onpointerdown="gpP(this)" onpointerup="gpR(this)" onpointerleave="gpR(this)">▲</div><div></div>
+          <div class="gp-d" data-k="ArrowLeft" onpointerdown="gpP(this)" onpointerup="gpR(this)" onpointerleave="gpR(this)">◀</div><div></div><div class="gp-d" data-k="ArrowRight" onpointerdown="gpP(this)" onpointerup="gpR(this)" onpointerleave="gpR(this)">▶</div>
+          <div></div><div class="gp-d" data-k="ArrowDown" onpointerdown="gpP(this)" onpointerup="gpR(this)" onpointerleave="gpR(this)">▼</div><div></div>
+        </div>
+      </div>
+      <div class="gp-center">
+        <div class="gp-mrow">
+          <button class="gp-mid" data-k="Shift" onpointerdown="gpP(this)" onpointerup="gpR(this)">SEL</button>
+          <button class="gp-mid" data-k="Enter" onpointerdown="gpP(this)" onpointerup="gpR(this)">STA</button>
+        </div>
+      </div>
+      <div>
+        <div class="gp-abxy">
+          <div class="gp-b y" data-k="w" id="gp-y" onpointerdown="gpP(this)" onpointerup="gpR(this)" onpointerleave="gpR(this)">Y</div>
+          <div class="gp-b b" data-k="d" id="gp-b" onpointerdown="gpP(this)" onpointerup="gpR(this)" onpointerleave="gpR(this)">B</div>
+          <div class="gp-b x" data-k="a" id="gp-x" onpointerdown="gpP(this)" onpointerup="gpR(this)" onpointerleave="gpR(this)">X</div>
+          <div class="gp-b a" data-k="s" id="gp-a" onpointerdown="gpP(this)" onpointerup="gpR(this)" onpointerleave="gpR(this)">A</div>
+        </div>
+      </div>
+    </div>
+    <button id="gp-show-btn" onclick="toggleGpUi()" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:34px;height:18px;border-radius:9px;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.14);cursor:pointer;font-size:10px;display:none;grid;place-items:center;z-index:6;pointer-events:all;color:var(--tx0)">🕹</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="gp-bar"></div>
+
+<!-- ─── SCRIPT ────────────────────────────────────────────── -->
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════
+   SYSTEMS REGISTRY — full metadata
+══════════════════════════════════════════ */
+const SYS = {
+  nes:  {n:'NES',   f:'Nintendo Entertainment System', core:'nes',         ico:'🎮',col:'#e03030',perf:1,lf:'Nintendo - Nintendo Entertainment System',      cores:['nes','fceumm','nestopia'],          bios:null},
+  snes: {n:'SNES',  f:'Super Nintendo',                core:'snes',        ico:'🎮',col:'#7040c0',perf:1,lf:'Nintendo - Super Nintendo Entertainment System', cores:['snes','snes9x'],                    bios:null},
+  n64:  {n:'N64',   f:'Nintendo 64',                   core:'n64',         ico:'🎮',col:'#1a90c0',perf:2,lf:'Nintendo - Nintendo 64',                         cores:['n64','mupen64plus'],                 bios:null},
+  gc:   {n:'GC',    f:'GameCube',                      core:'dolphin',     ico:'🎲',col:'#6020a0',perf:4,lf:'Nintendo - GameCube',                            cores:['dolphin'],                          bios:null,warn:'ثقيل جداً في المتصفح'},
+  gb:   {n:'GB',    f:'Game Boy',                      core:'gb',          ico:'🕹',col:'#60a020',perf:1,lf:'Nintendo - Game Boy',                           cores:['gb','gambatte','sameboy'],           bios:null},
+  gbc:  {n:'GBC',   f:'Game Boy Color',                core:'gbc',         ico:'🕹',col:'#20a0c0',perf:1,lf:'Nintendo - Game Boy Color',                     cores:['gbc','gambatte'],                    bios:null},
+  gba:  {n:'GBA',   f:'Game Boy Advance',              core:'gba',         ico:'🕹',col:'#8050c0',perf:1,lf:'Nintendo - Game Boy Advance',                   cores:['gba','mgba'],                        bios:null},
+  nds:  {n:'NDS',   f:'Nintendo DS',                   core:'nds',         ico:'🎮',col:'#c03030',perf:2,lf:'Nintendo - Nintendo DS',                        cores:['nds','melonds'],                     bios:null},
+  md:   {n:'MD',    f:'Sega Mega Drive',               core:'segaMD',      ico:'🕹',col:'#2050a0',perf:1,lf:'Sega - Mega Drive - Genesis',                   cores:['segaMD','genesis_plus_gx','picodrive'],bios:null},
+  sms:  {n:'SMS',   f:'Sega Master System',            core:'segaMS',      ico:'🕹',col:'#105090',perf:1,lf:'Sega - Master System - Mark III',               cores:['segaMS'],                            bios:null},
+  gg:   {n:'GG',    f:'Sega Game Gear',                core:'segaGG',      ico:'🕹',col:'#208060',perf:1,lf:'Sega - Game Gear',                             cores:['segaGG'],                            bios:null},
+  scd:  {n:'SCD',   f:'Sega CD',                       core:'segaCD',      ico:'💿',col:'#207040',perf:2,lf:'Sega - Mega-CD',                              cores:['segaCD'],                            bios:'bios_CD_U.bin'},
+  s32x: {n:'32X',   f:'Sega 32X',                      core:'sega32x',     ico:'🕹',col:'#a02020',perf:2,lf:'Sega - 32X',                                   cores:['sega32x','picodrive'],               bios:null},
+  sat:  {n:'SAT',   f:'Sega Saturn',                   core:'yabause',     ico:'💿',col:'#808010',perf:4,lf:'Sega - Saturn',                                cores:['yabause','mednafen_saturn'],         bios:'sega_101.bin',warn:'ثقيل جداً'},
+  dc:   {n:'DC',    f:'Sega Dreamcast',                core:'flycast',     ico:'💿',col:'#e06010',perf:3,lf:'Sega - Dreamcast',                             cores:['flycast'],                           bios:'dc_boot.bin'},
+  psx:  {n:'PS1',   f:'PlayStation 1',                 core:'psx',         ico:'🎮',col:'#102870',perf:2,lf:'Sony - PlayStation',                           cores:['psx','pcsx_rearmed','mednafen_psx'],  bios:'scph1001.bin'},
+  psp:  {n:'PSP',   f:'PlayStation Portable',          core:'ppsspp',      ico:'🎮',col:'#102060',perf:3,lf:'Sony - PlayStation Portable',                  cores:['ppsspp'],                            bios:null},
+  fbneo:{n:'FBNeo', f:'Arcade (Final Burn Neo)',        core:'fbneo',       ico:'🕹',col:'#c0a000',perf:1,lf:'FBNeo - Arcade Games',                         cores:['fbneo'],                             bios:null},
+  mame: {n:'MAME',  f:'MAME 2003+',                    core:'mame2003plus',ico:'🕹',col:'#c03030',perf:2,lf:'MAME',                                         cores:['mame2003plus','mame2000'],           bios:null},
+  a2600:{n:'A2600', f:'Atari 2600',                    core:'atari2600',   ico:'🕹',col:'#e05010',perf:1,lf:'Atari - 2600',                                 cores:['atari2600','stella'],                bios:null},
+  a7800:{n:'A7800', f:'Atari 7800',                    core:'atari7800',   ico:'🕹',col:'#c03010',perf:1,lf:'Atari - 7800',                                 cores:['atari7800'],                         bios:null},
+  lynx: {n:'Lynx',  f:'Atari Lynx',                    core:'lynx',        ico:'🕹',col:'#e08020',perf:1,lf:'Atari - Lynx',                                 cores:['lynx','handy'],                      bios:'lynxboot.img'},
+  pce:  {n:'PCE',   f:'PC Engine / TurboGrafx-16',     core:'pce',         ico:'🕹',col:'#e05020',perf:1,lf:'NEC - PC Engine - TurboGrafx 16',               cores:['pce','mednafen_pce'],                bios:null},
+  ngp:  {n:'NGP',   f:'Neo Geo Pocket',                core:'ngp',         ico:'🕹',col:'#c09000',perf:1,lf:'SNK - Neo Geo Pocket Color',                   cores:['ngp'],                               bios:null},
+  ws:   {n:'WS',    f:'WonderSwan',                    core:'ws',          ico:'🕹',col:'#009090',perf:1,lf:'Bandai - WonderSwan Color',                    cores:['ws','mednafen_wswan'],               bios:null},
+  dos:  {n:'DOS',   f:'MS-DOS',                        core:'dosbox',      ico:'💻',col:'#10c050',perf:1,lf:'DOS',                                          cores:['dosbox','dosbox_pure'],              bios:null},
+  vb:   {n:'VBoy',  f:'Virtual Boy',                   core:'vb',          ico:'👓',col:'#c01010',perf:1,lf:'Nintendo - Virtual Boy',                       cores:['vb'],                                bios:null},
+};
+
+// Extension → system ID mapping
+const EXT_MAP = {
+  '.nes':'nes','.smc':'snes','.sfc':'snes','.n64':'n64','.z64':'n64','.v64':'n64',
+  '.gcm':'gc','.iso':'psx','.gcz':'gc','.rvz':'gc','.wbfs':'gc',
+  '.gb':'gb','.gbc':'gbc','.gba':'gba','.nds':'nds',
+  '.md':'md','.gen':'md','.smd':'md','.sms':'sms','.gg':'gg',
+  '.cue':'scd','.chd':'dc','.gdi':'dc','.cdi':'dc',
+  '.32x':'s32x','.bin':'psx','.pbp':'psp','.cso':'psp',
+  '.a26':'a2600','.a78':'a7800','.lnx':'lynx','.pce':'pce',
+  '.ngp':'ngp','.ngc':'ngp','.ngpc':'ngp','.ws':'ws','.wsc':'ws',
+  '.j64':'a7800','.jag':'a7800','.v64':'n64',
+  '.vb':'vb','.vboy':'vb','.exe':'dos','.d64':'dos',
+};
+
+// Performance labels
+const PERF = ['','⚡ خفيف','⚡⚡ متوسط','🔥 ثقيل','💀 ثقيل جداً'];
+const PERF_CLS = ['','p1','p2','p3','p4'];
+
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+let GAMES = [];
+let favs = new Set();
+let cfgShader = 'none';
+let cfgArt = true;
+let cfgGpUi = false;
+let saveSlot = 1;
+let blobUrls = [];
+let asTimer = null;
+let activeGame = null;
+let cfgEjs = 'https://cdn.emulatorjs.org/stable/data/';
+let cfgProxy = '';
+let cfgCloud = {owner:'', repo:'', branch:'main', folder:'roms', token:''};
+let biosUrls = {};
+let coreOverrides = {};
+let currentFilter = 'all';
+
+/* ══════════════════════════════════════════
+   SHADERS CONFIG
+══════════════════════════════════════════ */
+const SHADERS = [
+  {id:'none',   label:'بدون',     ico:'🖥'},
+  {id:'scan',   label:'Scanlines',ico:'📺'},
+  {id:'crt',    label:'CRT',      ico:'📡'},
+  {id:'warm',   label:'Warm',     ico:'🕯'},
+  {id:'neon',   label:'Neon',     ico:'⚡'},
+];
+
+/* ══════════════════════════════════════════
+   COVER ART — Libretro Thumbnails
+══════════════════════════════════════════ */
+const artCache = new Map();
+async function getArt(title, sysId) {
+  if (!cfgArt) return null;
+  const key = sysId + '|' + title;
+  if (artCache.has(key)) return artCache.get(key);
+  const sys = SYS[sysId]; if (!sys?.lf) { artCache.set(key, null); return null; }
+  const clean = title.replace(/[:<>"/\\|?*]/g, '').trim();
+  const tryFetch = async (name) => {
+    const url = `https://thumbnails.libretro.com/${encodeURIComponent(sys.lf)}/Named_Boxarts/${encodeURIComponent(name)}.png`;
+    try { const r = await fetch(url, {method:'HEAD'}); if (r.ok) return url; } catch {}
+    return null;
+  };
+  let url = await tryFetch(clean);
+  if (!url) url = await tryFetch(clean.replace(/\s*\([^)]*\)/g, '').trim());
+  artCache.set(key, url); return url;
+}
+
+/* ══════════════════════════════════════════
+   CANVAS COVER GENERATOR
+══════════════════════════════════════════ */
+const cvCache = new Map();
+function hash(s) { let h=0x811c9dc5; for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=(h*0x01000193)>>>0} return h; }
+function genCover(title, col, ico, w=200, h=280) {
+  const k = `${title}|${col}|${w}|${h}`;
+  if (cvCache.has(k)) return cvCache.get(k);
+  const cv = document.createElement('canvas'); cv.width=w; cv.height=h;
+  const ctx = cv.getContext('2d');
+  const hv = hash(title||'?'), h1=(hv%360+360)%360, h2=(h1+65+((hv>>8)%70))%360, h3=(h1+155+((hv>>16)%70))%360;
+  const g = ctx.createLinearGradient(0,0,w,h);
+  g.addColorStop(0,`hsl(${h1},65%,9%)`); g.addColorStop(.5,`hsl(${h2},55%,6%)`); g.addColorStop(1,`hsl(${h3},70%,5%)`);
+  ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+  ctx.save(); ctx.globalAlpha=.08; ctx.fillStyle=col;
+  for(let x=0;x<w;x+=22) for(let y=0;y<h;y+=22) { ctx.beginPath(); ctx.arc(x,y,1,0,Math.PI*2); ctx.fill(); }
+  ctx.restore();
+  const rg = ctx.createRadialGradient(w/2,h*.38,0,w/2,h*.38,w*.55);
+  rg.addColorStop(0,col+'33'); rg.addColorStop(1,'transparent'); ctx.fillStyle=rg; ctx.fillRect(0,0,w,h);
+  ctx.save(); ctx.globalAlpha=.8; const sz=Math.min(w,h)*.34;
+  ctx.font=`${sz}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.shadowColor=col; ctx.shadowBlur=sz*.4; ctx.fillText(ico||'🎮',w/2,h*.36); ctx.restore();
+  const fade = ctx.createLinearGradient(0,h*.5,0,h);
+  fade.addColorStop(0,'transparent'); fade.addColorStop(.35,'rgba(0,0,0,.72)'); fade.addColorStop(1,'rgba(0,0,0,.96)');
+  ctx.fillStyle=fade; ctx.fillRect(0,h*.48,w,h);
+  const nm=(title||'').replace(/\([^)]*\)/g,'').trim();
+  ctx.save(); ctx.textAlign='center'; ctx.fillStyle='#fff'; ctx.shadowColor='rgba(0,0,0,.9)'; ctx.shadowBlur=5;
+  let fs=Math.min(w*.08,13); ctx.font=`700 ${fs}px 'Space Mono',monospace`;
+  const words=nm.split(/\s+/), lines=[]; let cur='';
+  for(const w2 of words){const t=cur?cur+' '+w2:w2; if(ctx.measureText(t).width>w-16&&cur){lines.push(cur);cur=w2}else cur=t}
+  if(cur) lines.push(cur);
+  const lh=fs*1.35, ty=h-lines.length*lh-7;
+  lines.forEach((l,i)=>ctx.fillText(l,w/2,ty+i*lh+lh/2)); ctx.restore();
+  cvCache.set(k,cv); return cv;
+}
+
+/* ══════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════ */
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const sl = ms => new Promise(r => setTimeout(r, ms));
+let _tt;
+function toast(m, d=2800) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('on'),d); }
+function getSys(id) { return SYS[id] || {n:id.toUpperCase(),f:id,core:id,ico:'🎮',col:'#7c5cfc',perf:1,cores:[id],bios:null}; }
+function isFav(id) { return favs.has(id); }
+function saveFavs() { try{localStorage.setItem('av-f', JSON.stringify([...favs]))}catch{} }
+function saveCfg() { try{localStorage.setItem('av-cfg', JSON.stringify({shader:cfgShader,art:cfgArt,gpUi:cfgGpUi,ejs:cfgEjs,proxy:cfgProxy,cloud:cfgCloud,bios:biosUrls,cores:coreOverrides}))}catch{} }
+
+function setStatus(msg, type='') {
+  const bar = document.getElementById('status-bar');
+  const dot = document.getElementById('sdot');
+  const txt = document.getElementById('status-txt');
+  bar.classList.toggle('hide', !msg);
+  if (!msg) return;
+  dot.className = 'status-dot ' + type;
+  txt.textContent = msg;
+}
+
+/* ══════════════════════════════════════════
+   GITHUB AUTO-DETECT
+══════════════════════════════════════════ */
+function autoDetectGitHub() {
+  const loc = window.location.href;
+  // github.io: https://USER.github.io/REPO/
+  const m = loc.match(/https?:\/\/([^.]+)\.github\.io\/([^/?#]+)/);
+  if (m && !cfgCloud.owner) {
+    cfgCloud.owner = m[1];
+    cfgCloud.repo  = m[2];
+  }
+}
+
+function getGitHubRawBase() {
+  if (!cfgCloud.owner || !cfgCloud.repo) return '';
+  return `https://raw.githubusercontent.com/${cfgCloud.owner}/${cfgCloud.repo}/${cfgCloud.branch||'main'}`;
+}
+
+function getRomUrl(game) {
+  const raw = getGitHubRawBase();
+  const folder = cfgCloud.folder || 'roms';
+  const prefix = cfgProxy ? cfgProxy + encodeURIComponent(raw + '/' + folder + '/' + game.file) : (raw ? raw + '/' + folder + '/' + game.file : folder + '/' + game.file);
+  return prefix;
+}
+
+/* ══════════════════════════════════════════
+   GITHUB API — SCAN ROMS FOLDER
+══════════════════════════════════════════ */
+async function scanRoms(manual = false) {
+  const {owner, repo, branch='main', folder='roms', token=''} = cfgCloud;
+  const btn = document.getElementById('sync-btn');
+  btn.classList.add('spinning');
+  setStatus('جاري مسح مجلد ' + folder + '...', 'spin');
+
+  try {
+    let files = [];
+
+    if (owner && repo) {
+      // GitHub Contents API
+      const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${folder}?ref=${branch}`;
+      const headers = { 'Accept': 'application/vnd.github.v3+json' };
+      if (token) headers['Authorization'] = 'token ' + token;
+      const resp = await fetch(apiUrl, { headers });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.message || 'HTTP ' + resp.status);
+      }
+      const data = await resp.json();
+      if (!Array.isArray(data)) throw new Error('المسار ليس مجلداً');
+      // Filter by supported extensions
+      files = data.filter(f => f.type === 'file').map(f => ({
+        name: f.name, size: f.size
+      })).filter(f => {
+        const ext = '.' + f.name.split('.').pop().toLowerCase();
+        return !!EXT_MAP[ext];
+      });
+    } else {
+      // Try loading games.json as fallback
+      try {
+        const r = await fetch('./games.json');
+        if (r.ok) {
+          const d = await r.json();
+          if (d.games) { loadFromGamesJson(d); return; }
+        }
+      } catch {}
+      if (manual) {
+        setStatus('حدد GitHub Repository في الإعدادات أو أضف games.json', 'warn');
+        document.getElementById('status-action').style.display = 'block';
+        btn.classList.remove('spinning');
+        return;
+      }
+    }
+
+    // Build GAMES array
+    const prevFavs = new Set(GAMES.filter(g=>isFav(g.id)).map(g=>g.id));
+    GAMES = files.map(f => {
+      const ext = '.' + f.name.split('.').pop().toLowerCase();
+      const sysId = EXT_MAP[ext] || 'nes';
+      const title = f.name.replace(/\.[^.]+$/, '').replace(/[_-]/g, ' ').replace(/\s+/g, ' ').trim();
+      const id = sysId + '_' + f.name.replace(/[^a-zA-Z0-9]/g, '_');
+      // Restore favorite
+      if (prevFavs.has(id)) favs.add(id);
+      return { id, title, file: f.name, system: sysId, size: f.size || 0, ext };
+    });
+
+    const msg = `✅ ${GAMES.length} لعبة في ${folder}`;
+    setStatus(msg, 'ok');
+    document.getElementById('status-action').style.display = 'none';
+    if (manual) toast('☁️ ' + msg);
+    saveGamesToCache();
+    refreshAll();
+
+  } catch(e) {
+    setStatus('❌ ' + e.message, 'err');
+    if (manual) toast('❌ ' + e.message, 4000);
+    // Try cached games
+    loadFromCache();
+  } finally {
+    btn.classList.remove('spinning');
+  }
+}
+
+function loadFromGamesJson(data) {
+  if (!data.games) return;
+  GAMES = data.games.map(g => {
+    const sys = SYS[g.system] || {};
+    return {
+      id: g.id || g.system + '_' + g.file,
+      title: g.title || g.file,
+      file: g.file, system: g.system || 'nes',
+      size: g.size || 0, cover: g.cover || null,
+      year: g.year, genre: g.genre,
+      ext: '.' + g.file.split('.').pop().toLowerCase()
+    };
+  });
+  setStatus('✅ ' + GAMES.length + ' لعبة من games.json', 'ok');
+  saveGamesToCache();
+  refreshAll();
+}
+
+function saveGamesToCache() { try{localStorage.setItem('av-games', JSON.stringify(GAMES))}catch{} }
+function loadFromCache() {
+  try {
+    const c = localStorage.getItem('av-games');
+    if (c) { GAMES = JSON.parse(c); refreshAll(); setStatus('📦 من التخزين المحلي (' + GAMES.length + ' لعبة)', 'warn'); }
+  } catch {}
+}
+
+/* ══════════════════════════════════════════
+   RENDER
+══════════════════════════════════════════ */
+function refreshAll() {
+  const sysCnt = new Set(GAMES.map(g=>g.system)).size;
+  document.getElementById('stat-games').textContent = GAMES.length;
+  document.getElementById('stat-sys').textContent = sysCnt;
+  document.getElementById('h-games').textContent = GAMES.length;
+  document.getElementById('h-sys').textContent = sysCnt;
+  document.getElementById('tab-games-badge').textContent = GAMES.length;
+  document.getElementById('tab-fav-badge').textContent = favs.size;
+  renderHome(); renderSystems();
+}
+
+function renderHome() {
+  const f = currentFilter;
+  const list = f === 'all' ? [...GAMES] : GAMES.filter(g => g.system === f);
+  document.getElementById('h-count').textContent = list.length;
+  buildChips('h-chips', GAMES, f, 'setFilter');
+  renderGrid('h-grid', list.slice(0, 60)); // limit for performance
+}
+
+function renderGames() {
+  const f = currentFilter;
+  const list = f === 'all' ? [...GAMES] : GAMES.filter(g => g.system === f);
+  document.getElementById('g-count').textContent = list.length;
+  buildChips('g-chips', GAMES, f, 'setFilter');
+  renderGrid('g-grid', list);
+}
+
+function renderSystems() {
+  const sys = {}; GAMES.forEach(g => { if (!sys[g.system]) sys[g.system] = 0; sys[g.system]++; });
+  const el = document.getElementById('sys-grid');
+  el.innerHTML = Object.entries(sys).map(([sid, cnt]) => {
+    const s = getSys(sid);
+    return `<div class="sys-card" style="--c:${s.col}" onclick="setFilter('${sid}',null);nav('games')">
+      <div class="sys-ico">${s.ico}</div>
+      <div class="sys-info">
+        <div class="sys-name">${s.n}</div>
+        <div class="sys-full">${s.f}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <span class="sys-cnt">${cnt} ROM</span>
+        <span class="perf-badge ${PERF_CLS[s.perf]||'p1'}">${PERF[s.perf]||''}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderFav() {
+  const list = GAMES.filter(g => isFav(g.id));
+  document.getElementById('tab-fav-badge').textContent = list.length;
+  renderGrid('fav-grid', list);
+}
+
+function buildChips(id, games, active, fn) {
+  const el = document.getElementById(id); if (!el) return;
+  const sys = {}; games.forEach(g => { if(!sys[g.system]) sys[g.system]=0; sys[g.system]++; });
+  let h = `<button class="chip ${active==='all'?'on':''}" onclick="${fn}('all',this)">الكل (${games.length})</button>`;
+  Object.entries(sys).sort((a,b)=>b[1]-a[1]).forEach(([sid,cnt])=>{
+    const s=getSys(sid);
+    h += `<button class="chip ${active===sid?'on':''}" onclick="${fn}('${sid}',this)">${s.ico} ${s.n} (${cnt})</button>`;
+  });
+  el.innerHTML = h;
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  // Refresh all chip rows
+  ['h-chips','g-chips'].forEach(id => {
+    document.querySelectorAll('#'+id+' .chip').forEach(b => b.classList.remove('on'));
+    const target = btn || document.querySelector(`#${id} .chip[onclick*="'${f}'"]`);
+    if (target && target.closest('#'+id)) target.classList.add('on');
+  });
+  const currentScreen = document.querySelector('.screen.on')?.id;
+  if (currentScreen === 'screen-home') renderHome();
+  if (currentScreen === 'screen-games') renderGames();
+}
+
+/* ── Card ── */
+function renderGrid(containerId, games) {
+  const el = document.getElementById(containerId); if (!el) return;
+  if (!games.length) { el.innerHTML = '<div class="empty"><div class="empty-ico">🎮</div><div class="empty-title">لا توجد ألعاب</div><div class="empty-sub">أضف ملفات الروم في مجلد roms/ وقم بالمزامنة</div></div>'; return; }
+  el.innerHTML = games.map((g, i) => buildCard(g, i)).join('');
+  requestAnimationFrame(() => games.forEach(g => activateCard(g)));
+}
+
+function buildCard(g, i) {
+  const s = getSys(g.system);
+  return `<div class="gcard" style="--c:${s.col};animation-delay:${Math.min(i,20)*12}ms" id="gcard-${g.id}" onclick="playGame('${g.id}')">
+    <div class="gcard-poster">
+      <canvas id="cv-${g.id}" width="200" height="280"></canvas>
+      <img class="art" id="art-${g.id}" alt="" crossorigin="anonymous">
+      <span class="sys-tag">${s.n}</span>
+      <button class="fav-btn ${isFav(g.id)?'on':''}" id="fav-${g.id}" onclick="toggleFav('${g.id}');event.stopPropagation()">${isFav(g.id)?'❤':'♡'}</button>
+      <div class="gcard-play"><div class="play-btn">▶</div></div>
+    </div>
+    <div class="gcard-info">
+      <div class="gcard-name">${esc(g.title)}</div>
+      <div class="gcard-sub">
+        <span class="gcard-sys">${s.n}</span>
+        <span class="gcard-yr">${g.year||''}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function activateCard(g) {
+  const s = getSys(g.system);
+  const cv = document.getElementById('cv-' + g.id);
+  const im = document.getElementById('art-' + g.id);
+  if (cv) cv.getContext('2d').drawImage(genCover(g.title, s.col, s.ico, 200, 280), 0, 0);
+  if (!cfgArt || !im) return;
+  const artUrl = g.cover || null;
+  if (artUrl) { im.onload = () => im.classList.add('ok'); im.src = artUrl; return; }
+  getArt(g.title, g.system).then(url => { if (url && im) { im.onload = () => im.classList.add('ok'); im.src = url; } });
+}
+
+function toggleFav(id) {
+  favs.has(id) ? favs.delete(id) : favs.add(id);
+  saveFavs();
+  // Update all instances
+  document.querySelectorAll(`#fav-${id}`).forEach(b => {
+    b.classList.toggle('on', favs.has(id));
+    b.textContent = favs.has(id) ? '❤' : '♡';
+  });
+  document.getElementById('tab-fav-badge').textContent = favs.size;
+  toast(favs.has(id) ? '❤ أُضيف للمفضلة' : '💔 أُزيل من المفضلة');
+}
+
+/* ══════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════ */
+function nav(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.getElementById('screen-' + id)?.classList.add('on');
+  document.getElementById('tab-' + id)?.classList.add('on');
+  if (id !== 'home') document.getElementById('search').value = '';
+  if (id === 'games') renderGames();
+  if (id === 'systems') renderSystems();
+  if (id === 'fav') renderFav();
+  window.scrollTo(0, 0);
+}
+
+/* ══════════════════════════════════════════
+   SEARCH
+══════════════════════════════════════════ */
+function onSearch(q) {
+  const ql = q.toLowerCase().trim();
+  if (!ql) { nav('home'); return; }
+  nav('games');
+  const res = GAMES.filter(g => g.title.toLowerCase().includes(ql) || g.system.includes(ql));
+  document.getElementById('g-count').textContent = res.length + ' نتيجة';
+  renderGrid('g-grid', res);
+}
+
+/* ══════════════════════════════════════════
+   PLAY
+══════════════════════════════════════════ */
+async function playGame(id) {
+  const game = GAMES.find(g => g.id === id);
+  if (!game) { toast('❌ اللعبة غير موجودة'); return; }
+  const sys = getSys(game.system);
+  activeGame = game;
+
+  // Performance warning
+  if (sys.perf >= 3 && document.getElementById('t-perf-warn').classList.contains('on')) {
+    if (!confirm(`⚠️ ${sys.n}: ${PERF[sys.perf]}\n${sys.warn||'هذا النظام قد يعمل ببطء في المتصفح'}\n\nهل تريد الاستمرار؟`)) return;
+  }
+
+  // Show emulator overlay
+  const emu = document.getElementById('emu');
+  emu.classList.add('on'); document.body.style.overflow = 'hidden';
+  document.getElementById('emu-load').classList.remove('gone');
+  document.getElementById('emu-err').classList.remove('on');
+  document.getElementById('emu-title').textContent = game.title;
+  document.getElementById('emu-sys').textContent = sys.f;
+  document.getElementById('load-title').textContent = game.title;
+  document.getElementById('load-sys').textContent = sys.f;
+  document.getElementById('emu-as').className = 'emu-as' + (document.getElementById('t-as').classList.contains('on') ? ' on' : '');
+
+  // Loading poster
+  const lc = document.getElementById('load-cvs'), li = document.getElementById('load-img');
+  lc.width=96; lc.height=132; lc.getContext('2d').drawImage(genCover(game.title, sys.col, sys.ico, 96, 132), 0, 0);
+  li.style.display='none'; lc.style.display='block';
+  getArt(game.title, game.system).then(url => { if(url&&li){li.onload=()=>{li.style.display='block';lc.style.display='none'};li.src=url} });
+
+  // Build ROM URL
+  const romUrl = getRomUrl(game);
+  document.getElementById('load-status').textContent = '⏳ جاري التحميل...';
+  try {
+    const resp = await fetch(romUrl);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status} — تأكد أن الملف موجود في مجلد roms/`);
+    document.getElementById('load-status').textContent = '⏳ جاري التحضير...';
+    const data = await resp.arrayBuffer();
+    document.getElementById('load-status').textContent = '✅ جاهز للعب';
+    await sl(200);
+    const rb = new Blob([data], {type:'application/octet-stream'});
+    const ru = URL.createObjectURL(rb); blobUrls.push(ru);
+    const core = coreOverrides[game.system] || sys.core;
+    const biosUrl = biosUrls[game.system] || '';
+    const html = buildEmuHtml(ru, game.title, core, sys.col, game.id, biosUrl);
+    const hu = URL.createObjectURL(new Blob([html], {type:'text/html'})); blobUrls.push(hu);
+    const fr = document.getElementById('emu-frame');
+    fr.onload = () => { setTimeout(()=>document.getElementById('emu-load').classList.add('gone'), 2800); if(document.getElementById('t-as').classList.contains('on')) startAS(); };
+    fr.src = hu;
+  } catch(e) {
+    document.getElementById('emu-load').classList.add('gone');
+    showErr([
+      '• الملف: roms/' + game.file,
+      '• تأكد أنه مرفوع على GitHub',
+      '• تأكد من إعدادات المستودع',
+      '• إذا كانت مشكلة CORS — أضف Proxy في الإعدادات',
+      '• الخطأ: ' + e.message
+    ]);
+  }
+}
+
+function buildEmuHtml(romUrl, name, core, color, gameId, biosUrl) {
+  const sn = name.replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/\$/g,'\\$');
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;background:#000;overflow:hidden}#e{width:100%;height:100%}canvas{image-rendering:pixelated}</style></head><body><div id="e"></div>
+<script>
+window.EJS_player="#e";
+window.EJS_gameName=\`${sn}\`;
+window.EJS_biosUrl="${biosUrl}";
+window.EJS_gameUrl="${romUrl}";
+window.EJS_core="${core}";
+window.EJS_pathtodata="${cfgEjs}";
+window.EJS_startOnLoaded=true;
+window.EJS_color="${color}";
+window.EJS_backgroundColor="#000";
+window.EJS_defaultOptions={"save-state-slot":"1","save-state-location":"keep in browser"};
+window.EJS_Buttons={playPause:1,restart:1,mute:1,settings:1,fullscreen:1,saveState:1,loadState:1,gamepad:1,volume:1,saveSavFiles:1,loadSavFiles:1,screenshot:1,cheat:1};
+window.EJS_onGameStart=()=>window.parent.postMessage({t:'ok',id:'${gameId}'},'*');
+window.EJS_onSaveState=()=>window.parent.postMessage({t:'saved'},'*');
+window.EJS_onLoadState=()=>window.parent.postMessage({t:'loaded'},'*');
+window.EJS_onLoadError=(e)=>window.parent.postMessage({t:'err',m:e},'*');
+window.addEventListener('message',e=>{if(!e.data)return;try{if(e.data.t==='save')EJS_emulator.gameManager.saveState(e.data.s||0);if(e.data.t==='load')EJS_emulator.gameManager.loadState(e.data.s||0)}catch{}});
+<\/script>
+<script src="${cfgEjs}loader.js"><\/script></body></html>`;
+}
+
+window.addEventListener('message', e => {
+  if (!e.data?.t) return;
+  if (e.data.t === 'ok') document.getElementById('emu-load').classList.add('gone');
+  if (e.data.t === 'err') { document.getElementById('emu-load').classList.add('gone'); showErr(['فشل تحميل المحاكي','تأكد من CDN في الإعدادات','الخطأ: '+e.data.m]); }
+  if (e.data.t === 'saved') { const b=document.getElementById('btn-save'); b.textContent='✅'; b.classList.add('saved'); setTimeout(()=>{b.textContent='💾 حفظ';b.classList.remove('saved')},1800); }
+  if (e.data.t === 'loaded') toast('✅ تم تحميل الحالة');
+});
+
+function showErr(tips) { document.getElementById('emu-err').classList.add('on'); document.getElementById('err-list').innerHTML = tips.map(t=>`<li>${esc(t)}</li>`).join(''); }
+function closeErr() { document.getElementById('emu-err').classList.remove('on'); }
+
+function exitEmu() {
+  if (!confirm('الخروج؟')) return;
+  doSave();
+  setTimeout(() => {
+    clearAS(); const fr = document.getElementById('emu-frame'); fr.src='about:blank';
+    document.getElementById('emu').classList.remove('on'); document.body.style.overflow='';
+    blobUrls.forEach(u=>URL.revokeObjectURL(u)); blobUrls=[];
+    activeGame=null; document.getElementById('qp').classList.remove('open');
+    document.getElementById('load-img').style.display='none'; document.getElementById('load-cvs').style.display='block';
+    document.getElementById('emu-err').classList.remove('on');
+    if(window.gc) window.gc();
+  }, 500);
+}
+
+/* ══════════════════════════════════════════
+   SAVE / LOAD / FS
+══════════════════════════════════════════ */
+function trigSave() { try{document.getElementById('emu-frame').contentWindow.postMessage({t:'save',s:saveSlot-1},'*')}catch{} }
+function doSave() { trigSave(); toast('💾 Slot '+saveSlot); }
+function doLoad() { try{document.getElementById('emu-frame').contentWindow.postMessage({t:'load',s:saveSlot-1},'*')}catch{} toast('📂 Slot '+saveSlot); }
+function doFS() { const c=document.getElementById('emu-content'); document.fullscreenElement?document.exitFullscreen?.():c.requestFullscreen?.().catch(()=>{}); }
+function startAS() { clearAS(); if(!document.getElementById('t-as').classList.contains('on'))return; asTimer=setInterval(()=>{if(document.getElementById('emu').classList.contains('on'))trigSave();},60000); }
+function clearAS() { if(asTimer){clearInterval(asTimer);asTimer=null;} }
+function toggleQP() { document.getElementById('qp').classList.toggle('open'); }
+
+/* ══════════════════════════════════════════
+   SHADERS
+══════════════════════════════════════════ */
+function setShader(id) {
+  cfgShader = id;
+  const c = document.getElementById('emu-content'); c.className='';
+  if (id !== 'none') c.classList.add('crt-' + id);
+  document.querySelectorAll('.sh-mini, .shader-opt').forEach(b => b.classList.toggle('on', b.dataset.shader === id));
+  saveCfg();
+}
+
+/* ══════════════════════════════════════════
+   GAMEPAD UI
+══════════════════════════════════════════ */
+function toggleGpUi() {
+  cfgGpUi = !cfgGpUi;
+  document.getElementById('gp-overlay').classList.toggle('on', cfgGpUi);
+  document.getElementById('t-gp').classList.toggle('on', cfgGpUi);
+  document.getElementById('gp-show-btn').style.display = cfgGpUi ? 'none' : 'grid';
+  saveCfg();
+}
+function gpP(el) { el.classList.add('p'); const k=el.dataset.k; if(k) try{document.getElementById('emu-frame').contentWindow.dispatchEvent(new KeyboardEvent('keydown',{key:k,bubbles:true,cancelable:true}))}catch{} }
+function gpR(el) { el.classList.remove('p'); const k=el.dataset.k; if(k) try{document.getElementById('emu-frame').contentWindow.dispatchEvent(new KeyboardEvent('keyup',{key:k,bubbles:true,cancelable:true}))}catch{} }
+
+/* ══════════════════════════════════════════
+   SETTINGS
+══════════════════════════════════════════ */
+function openSettings() { document.getElementById('settings-panel').classList.add('open'); buildSettingsSystems(); }
+function closeSettings() { document.getElementById('settings-panel').classList.remove('open'); }
+
+function buildSettingsSystems() {
+  // Shader grid
+  const sg = document.getElementById('shader-grid');
+  sg.innerHTML = SHADERS.map(s => `<div class="shader-opt ${cfgShader===s.id?'on':''}" data-shader="${s.id}" onclick="setShader('${s.id}')"><div class="sh-ico">${s.ico}</div>${s.label}</div>`).join('');
+
+  // QP shaders
+  const qps = document.getElementById('qp-shaders');
+  qps.innerHTML = SHADERS.map(s => `<div class="sh-mini ${cfgShader===s.id?'on':''}" data-shader="${s.id}" onclick="setShader('${s.id}')">${s.label}</div>`).join('');
+
+  // Core overrides
+  const co = document.getElementById('core-overrides');
+  co.innerHTML = Object.entries(SYS).map(([sid,s]) => s.cores.length < 2 ? '' :
+    `<div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--mono);font-size:11px;color:var(--tx2);width:50px;flex-shrink:0">${s.n}</span>
+    <select class="stg-select" style="flex:1" onchange="coreOverrides['${sid}']=this.value;saveCfg()">
+      ${s.cores.map(c=>`<option value="${c}" ${(coreOverrides[sid]||s.core)===c?'selected':''}>${c}</option>`).join('')}
+    </select></div>`
+  ).filter(Boolean).join('');
+
+  // BIOS
+  const bg = document.getElementById('bios-group');
+  const biosNeeded = Object.entries(SYS).filter(([,s])=>s.bios);
+  bg.innerHTML = biosNeeded.map(([sid,s]) =>
+    `<div class="stg-row">
+      <div class="stg-row-ico" style="font-size:14px">${s.ico}</div>
+      <div class="stg-row-info"><div class="stg-row-title">${s.n} BIOS</div><div class="stg-row-sub">${s.bios}</div></div>
+    </div>
+    <div class="stg-input-row">
+      <input class="stg-input" id="bios-${sid}" placeholder="URL لملف BIOS" value="${biosUrls[sid]||''}" onchange="biosUrls['${sid}']=this.value;saveCfg()">
+    </div>`
+  ).join('');
+  if (!biosNeeded.length) bg.innerHTML = '<div class="stg-row" style="cursor:default"><div class="stg-row-ico">✅</div><div class="stg-row-info"><div class="stg-row-title">BIOS غير مطلوب</div><div class="stg-row-sub">الأنظمة المحملة لا تحتاج BIOS</div></div></div>';
+
+  // Systems list in about
+  const sl2 = document.getElementById('s-systems-list');
+  const detected = [...new Set(GAMES.map(g=>g.system))];
+  if (detected.length) {
+    sl2.innerHTML = detected.map(sid => {
+      const s=getSys(sid); const cnt=GAMES.filter(g=>g.system===sid).length;
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 15px;border-bottom:1px solid var(--line)">
+        <span style="font-size:18px">${s.ico}</span>
+        <div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--tx0)">${s.f}</div><div style="font-size:11px;color:var(--tx2)">${s.n} · Core: ${coreOverrides[sid]||s.core}</div></div>
+        <div style="text-align:left"><span class="perf-badge ${PERF_CLS[s.perf]||'p1'}">${PERF[s.perf]||''}</span><div style="font-family:var(--mono);font-size:10px;color:var(--acc);margin-top:3px">${cnt} ROM</div></div>
+      </div>`;
+    }).join('') + '<div style="height:1px"></div>';
+  } else {
+    sl2.innerHTML = '<div class="stg-row" style="cursor:default"><div class="stg-row-info"><div class="stg-row-sub">لم يتم مسح الألعاب بعد</div></div></div>';
+  }
+}
+
+function updateRepoLabel() {
+  const o = document.getElementById('s-owner').value.trim();
+  const r = document.getElementById('s-repo').value.trim();
+  document.getElementById('s-repo-label').textContent = o&&r ? o+'/'+r : 'AUTO';
+}
+
+function saveCloud() {
+  cfgCloud.owner = document.getElementById('s-owner').value.trim();
+  cfgCloud.repo  = document.getElementById('s-repo').value.trim();
+  cfgCloud.token = document.getElementById('s-token').value.trim();
+  cfgCloud.folder= document.getElementById('s-roms-folder').value.trim() || 'roms';
+  saveCfg(); toast('✅ تم حفظ إعدادات GitHub'); scanRoms(true);
+}
+function saveCDN() { cfgEjs = document.getElementById('s-ejs').value.trim(); saveCfg(); toast('✅ تم حفظ CDN'); }
+function saveProxy() { cfgProxy = document.getElementById('s-proxy').value.trim(); saveCfg(); toast(cfgProxy ? '✅ تم حفظ Proxy' : '⚠️ مُسح Proxy'); }
+function clearProxy() { cfgProxy=''; document.getElementById('s-proxy').value=''; saveCfg(); toast('⚠️ مُسح Proxy'); }
+function toggleArt() { cfgArt = !cfgArt; document.getElementById('t-art').classList.toggle('on',cfgArt); artCache.clear(); saveCfg(); refreshAll(); toast(cfgArt?'🖼 أغلفة مفعّلة':'🖼 أغلفة مخفية'); }
+function checkWebGL() {
+  try {
+    const cv=document.createElement('canvas'); const gl=cv.getContext('webgl2')||cv.getContext('webgl');
+    if(!gl){document.getElementById('webgl-status').textContent='❌ غير مدعوم';return}
+    const v=cv.getContext('webgl2')?'WebGL 2.0':'WebGL 1.0';
+    const r=(gl.getParameter(gl.RENDERER)||'').substring(0,40);
+    document.getElementById('webgl-status').textContent=`✅ ${v} — ${r}`;
+  } catch(e){document.getElementById('webgl-status').textContent='❌ '+e.message}
+}
+
+/* ══════════════════════════════════════════
+   GAMEPAD API
+══════════════════════════════════════════ */
+const gpbar = document.getElementById('gp-bar');
+window.addEventListener('gamepadconnected', e => { gpbar.textContent='🎮 '+e.gamepad.id.substring(0,30); gpbar.classList.add('on'); toast('🎮 ذراع متصل'); setTimeout(()=>gpbar.classList.remove('on'),4000); });
+window.addEventListener('gamepaddisconnected', () => { gpbar.classList.remove('on'); toast('🔌 ذراع منفصل'); });
+document.addEventListener('keydown', e => { if(e.key==='Escape'&&document.getElementById('emu').classList.contains('on')) exitEmu(); });
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+(async () => {
+  const fill = document.getElementById('siteload-fill');
+  const stxt = document.getElementById('siteload-txt');
+
+  // Load saved config
+  try {
+    const c = JSON.parse(localStorage.getItem('av-cfg')||'{}');
+    if(c.shader) cfgShader=c.shader;
+    if(c.art!==undefined) cfgArt=c.art;
+    if(c.gpUi) cfgGpUi=c.gpUi;
+    if(c.ejs) cfgEjs=c.ejs;
+    if(c.proxy) cfgProxy=c.proxy;
+    if(c.cloud) Object.assign(cfgCloud,c.cloud);
+    if(c.bios) biosUrls={...c.bios};
+    if(c.cores) coreOverrides={...c.cores};
+  } catch {}
+
+  // Load favs
+  try { favs=new Set(JSON.parse(localStorage.getItem('av-f')||'[]')); } catch {}
+
+  fill.style.width='20%'; stxt.textContent='LOADING CONFIG...';
+
+  // Apply shader
+  if(cfgShader!=='none') document.getElementById('emu-content').classList.add('crt-'+cfgShader);
+  if(cfgGpUi) { document.getElementById('gp-overlay').classList.add('on'); document.getElementById('t-gp').classList.add('on'); document.getElementById('gp-show-btn').style.display='grid'; }
+
+  // Populate settings inputs
+  document.getElementById('s-ejs').value = cfgEjs;
+  if(cfgProxy) document.getElementById('s-proxy').value = cfgProxy;
+  if(cfgCloud.owner) { document.getElementById('s-owner').value=cfgCloud.owner; document.getElementById('s-repo-label').textContent=cfgCloud.owner+(cfgCloud.repo?'/'+cfgCloud.repo:''); }
+  if(cfgCloud.repo) document.getElementById('s-repo').value=cfgCloud.repo;
+  if(cfgCloud.token) document.getElementById('s-token').value=cfgCloud.token;
+  document.getElementById('s-roms-folder').value = cfgCloud.folder||'roms';
+  document.getElementById('t-art').classList.toggle('on',cfgArt);
+
+  // QP slots
+  const qpsl = document.getElementById('qp-slots');
+  [1,2,3,4].forEach(i=>{const b=document.createElement('button');b.className='qp-slot'+(i===1?' on':'');b.textContent='S'+i;b.onclick=()=>{saveSlot=i;document.querySelectorAll('.qp-slot').forEach(x=>x.classList.remove('on'));b.classList.add('on')};qpsl.appendChild(b)});
+
+  fill.style.width='40%'; stxt.textContent='DETECTING GITHUB...';
+  autoDetectGitHub();
+
+  fill.style.width='60%'; stxt.textContent='SCANNING ROMS...';
+  // Try loading from cache first for instant display
+  loadFromCache();
+  
+  fill.style.width='80%'; stxt.textContent='FETCHING GAMES...';
+  // Then try to scan from GitHub (will update if newer)
+  await scanRoms(false);
+
+  fill.style.width='100%';
+  await sl(350);
+  document.getElementById('siteload').classList.add('done');
+})();
+</script>
+</body>
+</html>
